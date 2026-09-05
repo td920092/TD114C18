@@ -17,7 +17,6 @@
       --text-muted: #64748b;
       --border: #e2e8f0;
       
-      /* 出勤狀態色彩 */
       --unknown-bg: #fff1f2;
       --unknown-border: #f43f5e;
       --unknown-text: #9f1239;
@@ -51,7 +50,7 @@
       margin: 0 auto;
     }
 
-    /* 頂部主導航列 (嚴格復刻圖示配置) */
+    /* 頂部主導航列 */
     header.main-header {
       display: flex;
       justify-content: space-between;
@@ -90,7 +89,7 @@
 
     .toolbar-actions {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
     }
 
@@ -120,15 +119,32 @@
       background: var(--primary-hover);
     }
 
-    /* 視圖切換控制 */
-    .view-panel {
-      display: none;
+    .sync-badge {
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
     }
-    .view-panel.active {
-      display: block;
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
     }
+    .sync-dot.online { background: #10b981; }
+    .sync-dot.syncing { background: #f59e0b; }
 
-    /* ================= 座位與出缺勤樣式 ================= */
+    /* 視圖切換控制 */
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+
+    /* 座位與出缺勤樣式 */
     .seat-layout {
       display: grid;
       grid-template-columns: 1fr 350px;
@@ -200,7 +216,6 @@
     .desk.personal { background: var(--personal-bg); border-color: #fdba74; color: var(--personal-text); }
     .desk.other { background: var(--other-bg); border-color: #c4b5fd; color: var(--other-text); }
 
-    /* 學生欄位：號碼+名字 */
     .desk-name {
       text-align: center;
       font-size: 1.05rem;
@@ -315,7 +330,7 @@
       font-family: inherit;
     }
 
-    /* ================= 班級黑板樣式 ================= */
+    /* 班級黑板樣式 */
     .blackboard-frame {
       background: var(--board-border);
       padding: 16px;
@@ -414,9 +429,7 @@
       font-family: inherit;
     }
 
-    .board-textarea::placeholder {
-      color: rgba(255, 255, 255, 0.25);
-    }
+    .board-textarea::placeholder { color: rgba(255, 255, 255, 0.25); }
 
     .board-footer {
       margin-top: 16px;
@@ -427,7 +440,7 @@
       opacity: 0.7;
     }
 
-    /* ================= 作業訂正樣式 ================= */
+    /* 作業訂正樣式 */
     .correction-container {
       display: flex;
       flex-direction: column;
@@ -537,9 +550,7 @@
       box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
     }
 
-    .seat-chip:hover {
-      transform: scale(1.06);
-    }
+    .seat-chip:hover { transform: scale(1.06); }
 
     .task-actions {
       display: flex;
@@ -547,16 +558,14 @@
       align-items: center;
     }
 
-    /* ================= 歷史查詢樣式 ================= */
+    /* 歷史查詢樣式 */
     .history-layout {
       display: grid;
       grid-template-columns: 360px 1fr;
       gap: 20px;
     }
 
-    .history-panel-section {
-      margin-bottom: 20px;
-    }
+    .history-panel-section { margin-bottom: 20px; }
 
     .history-result-box {
       background: #fff;
@@ -653,9 +662,7 @@
       font-size: 1rem;
       justify-content: center;
     }
-    .check-in-btn:hover {
-      background: #0369a1;
-    }
+    .check-in-btn:hover { background: #0369a1; }
 
     .task-form-group {
       display: flex;
@@ -683,7 +690,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- 頂部主導航列 (Row 1: 左側四個頁籤，右側兩顆卡片按鈕) -->
     <header class="main-header">
       <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchView('seating')">每日出缺勤</button>
@@ -692,24 +698,24 @@
         <button class="tab-btn" onclick="switchView('history')">歷史紀錄查詢</button>
       </div>
 
-      <!-- 每日出缺勤專屬工具按鈕 (如圖右上角) -->
       <div class="toolbar-actions" id="seatingMainActions">
+        <div class="sync-badge" id="syncStatusBadge" onclick="openCloudConfigModal()" style="cursor: pointer;" title="點擊設定 Google 試算表雲端同步">
+          <div class="sync-dot" id="syncDot"></div>
+          <span id="syncText">本機模式</span>
+        </div>
         <button class="btn-action" onclick="saveTodayToHistory(true)">💾 存檔今日出勤</button>
         <button class="btn-action" onclick="openRosterConfig()">編輯學生名單</button>
       </div>
 
-      <!-- 黑板工具按鈕 -->
       <div class="toolbar-actions" id="blackboardMainActions" style="display: none;">
         <button class="btn-action" onclick="toggleBlackboardFullscreen()">⛶ 全螢幕投影</button>
         <button class="btn-action" onclick="clearBoardText()">清空今日黑板</button>
       </div>
 
-      <!-- 作業訂正工具按鈕 -->
       <div class="toolbar-actions" id="correctionMainActions" style="display: none;">
         <button class="btn-action btn-primary" onclick="openNewTaskModal()">+ 新增訂正項目</button>
       </div>
 
-      <!-- 歷史紀錄工具按鈕 -->
       <div class="toolbar-actions" id="historyMainActions" style="display: none;">
         <button class="btn-action" onclick="exportHistoryData()">匯出歷史備份 (.json)</button>
       </div>
@@ -718,13 +724,11 @@
     <!-- 視圖一：每日出缺勤 -->
     <div id="seatingView" class="view-panel active">
       <div class="seat-layout">
-        <!-- 左側：講台與座位表 -->
         <div class="card">
           <div class="podium-indicator">講 台 / 黑 板</div>
           <div class="seating-grid" id="seatingGrid"></div>
         </div>
 
-        <!-- 右側：出缺席統計與快捷設定 -->
         <div>
           <div class="card">
             <div class="stats-header-bar">
@@ -763,7 +767,6 @@
               </div>
             </div>
 
-            <!-- 整合設定區塊 (不干擾頂部導航列) -->
             <div class="quick-settings-panel">
               <div class="time-setting-row">
                 <span>⏰ 遲到判定門檻：</span>
@@ -818,7 +821,7 @@
           </div>
 
           <div class="board-footer">
-            <span>內容即時本機自動儲存，按右上角「全螢幕」或鍵盤 Esc 隨時切換</span>
+            <span>內容即時本機與雲端自動同步，按右上角「全螢幕」或鍵盤 Esc 隨時切換</span>
             <span id="saveNotice">已同步</span>
           </div>
         </div>
@@ -875,6 +878,24 @@
             👈 請由左側選擇「日期」或「學生」進行歷史紀錄查詢
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 雲端同步設定彈窗 -->
+  <div class="modal" id="cloudConfigModal">
+    <div class="modal-content">
+      <h3 style="font-size: 1.2rem; margin-bottom: 6px;">☁️ Google 試算表雲端同步設定</h3>
+      <p style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">請貼上由 Google Apps Script 部署取得的「網頁應用程式網址 (exec)」，即可啟用白板與電腦雙向即時互通：</p>
+      
+      <div class="task-form-group">
+        <label for="gasApiUrlInput">Apps Script 網址：</label>
+        <input type="text" id="gasApiUrlInput" placeholder="https://script.google.com/macros/s/.../exec" />
+      </div>
+
+      <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-action" onclick="closeCloudConfigModal()">取消</button>
+        <button class="btn-action btn-primary" onclick="saveCloudConfig()">儲存並立即同步</button>
       </div>
     </div>
   </div>
@@ -973,9 +994,107 @@
     let correctionTasks = JSON.parse(localStorage.getItem('cm_corrections')) || DEFAULT_CORRECTIONS;
     let lateThreshold = localStorage.getItem('cm_late_threshold') || '07:40';
     let historyLogs = JSON.parse(localStorage.getItem('cm_history_logs')) || {};
+    let cloudApiUrl = localStorage.getItem('cm_cloud_api_url') || '';
     let currentSelectedStudent = null;
+    let syncDebounceTimer = null;
 
-    // 視圖切換 (0:seating, 1:blackboard, 2:corrections, 3:history)
+    // ================= 雲端資料同步機制 (Google Sheets GAS) =================
+    function updateSyncUI(status, text) {
+      const dot = document.getElementById('syncDot');
+      const label = document.getElementById('syncText');
+      if (dot && label) {
+        dot.className = `sync-dot ${status}`;
+        label.textContent = text;
+      }
+    }
+
+    // 觸發推送至雲端
+    function triggerCloudPush() {
+      if (!cloudApiUrl) return;
+      updateSyncUI('syncing', '正在同步...');
+
+      clearTimeout(syncDebounceTimer);
+      syncDebounceTimer = setTimeout(() => {
+        const payload = {
+          students: students,
+          correctionTasks: correctionTasks,
+          boardData: JSON.parse(localStorage.getItem('cm_board_data') || '{}'),
+          historyLogs: historyLogs,
+          lateThreshold: lateThreshold,
+          updatedAt: new Date().toISOString()
+        };
+
+        fetch(cloudApiUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(() => {
+          updateSyncUI('online', '雲端已同步');
+        }).catch(() => {
+          updateSyncUI('', '同步失敗');
+        });
+      }, 800);
+    }
+
+    // 從雲端抓取最新資料
+    function fetchCloudData() {
+      if (!cloudApiUrl) {
+        updateSyncUI('', '本機模式 (點擊設定雲端)');
+        return;
+      }
+
+      updateSyncUI('syncing', '載入雲端中...');
+      fetch(cloudApiUrl)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.students) {
+            students = data.students;
+            correctionTasks = data.correctionTasks || [];
+            historyLogs = data.historyLogs || {};
+            lateThreshold = data.lateThreshold || '07:40';
+            
+            localStorage.setItem('cm_students', JSON.stringify(students));
+            localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+            localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
+            localStorage.setItem('cm_late_threshold', lateThreshold);
+            if (data.boardData) {
+              localStorage.setItem('cm_board_data', JSON.stringify(data.boardData));
+            }
+
+            renderGrid();
+            loadBoardData();
+            document.getElementById('lateThresholdInput').value = lateThreshold;
+            updateSyncUI('online', '雲端同步中');
+          } else {
+            // 雲端為空，將本機資料推上雲端
+            triggerCloudPush();
+          }
+        })
+        .catch(() => {
+          updateSyncUI('', '連線離線 (使用本機快取)');
+        });
+    }
+
+    function openCloudConfigModal() {
+      document.getElementById('gasApiUrlInput').value = cloudApiUrl;
+      document.getElementById('cloudConfigModal').style.display = 'flex';
+    }
+
+    function closeCloudConfigModal() {
+      document.getElementById('cloudConfigModal').style.display = 'none';
+    }
+
+    function saveCloudConfig() {
+      const input = document.getElementById('gasApiUrlInput').value.trim();
+      cloudApiUrl = input;
+      localStorage.setItem('cm_cloud_api_url', cloudApiUrl);
+      closeCloudConfigModal();
+      fetchCloudData();
+      alert('已成功儲存雲端網址！');
+    }
+
+    // 視圖切換
     function switchView(viewName) {
       saveTodayToHistory(false);
 
@@ -1009,19 +1128,14 @@
       }
     }
 
-    // ================= 黑板功能 =================
+    // 黑板功能
     function toggleBlackboardFullscreen() {
       const boardElem = document.getElementById('blackboardContainer');
       if (!document.fullscreenElement) {
-        if (boardElem.requestFullscreen) {
-          boardElem.requestFullscreen();
-        } else if (boardElem.webkitRequestFullscreen) {
-          boardElem.webkitRequestFullscreen();
-        }
+        if (boardElem.requestFullscreen) boardElem.requestFullscreen();
+        else if (boardElem.webkitRequestFullscreen) boardElem.webkitRequestFullscreen();
       } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
+        if (document.exitFullscreen) document.exitFullscreen();
       }
     }
 
@@ -1036,6 +1150,7 @@
       notice.textContent = '自動儲存中...';
       setTimeout(() => { notice.textContent = '已同步'; }, 500);
       saveTodayToHistory(false);
+      triggerCloudPush();
     }
 
     function loadBoardData() {
@@ -1064,7 +1179,7 @@
       }
     }
 
-    // ================= 作業訂正功能 =================
+    // 作業訂正功能
     function renderCorrections() {
       const list = document.getElementById('correctionList');
       list.innerHTML = '';
@@ -1128,11 +1243,7 @@
       const task = correctionTasks.find(t => t.id === taskId);
       if (!task) return;
 
-      if (isNeedFix) {
-        task.needFixSeats = students.map(s => s.seat);
-      } else {
-        task.needFixSeats = [];
-      }
+      task.needFixSeats = isNeedFix ? students.map(s => s.seat) : [];
       saveCorrections();
       renderCorrections();
     }
@@ -1180,14 +1291,16 @@
 
     function saveCorrections() {
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+      triggerCloudPush();
     }
 
-    // ================= 每日出缺勤功能 =================
+    // 每日出缺勤功能
     function saveLateThreshold() {
       const val = document.getElementById('lateThresholdInput').value;
       if (val) {
         lateThreshold = val;
         localStorage.setItem('cm_late_threshold', val);
+        triggerCloudPush();
       }
     }
 
@@ -1295,6 +1408,7 @@
       renderGrid();
       closeModal();
       saveTodayToHistory(false);
+      triggerCloudPush();
     }
 
     function updateStatus(status) {
@@ -1307,6 +1421,7 @@
         renderGrid();
         closeModal();
         saveTodayToHistory(false);
+        triggerCloudPush();
       }
     }
 
@@ -1319,6 +1434,7 @@
         localStorage.setItem('cm_students', JSON.stringify(students));
         renderGrid();
         saveTodayToHistory(false);
+        triggerCloudPush();
       }
     }
 
@@ -1360,13 +1476,14 @@
         localStorage.setItem('cm_students', JSON.stringify(students));
         renderGrid();
         saveTodayToHistory(false);
+        triggerCloudPush();
         if (document.getElementById('correctionsView').classList.contains('active')) {
           renderCorrections();
         }
       }
     }
 
-    // ================= 歷史紀錄與自動/手動備份 =================
+    // 歷史紀錄功能
     function saveTodayToHistory(showAlert = false) {
       const todayStr = getTodayDateStr();
       const boardData = JSON.parse(localStorage.getItem('cm_board_data') || '{}');
@@ -1383,8 +1500,9 @@
       };
 
       localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
+      triggerCloudPush();
       if (showAlert) {
-        alert(`已成功手動備份【${todayStr}】的班級出勤與黑板紀錄至歷史庫！`);
+        alert(`已成功儲存【${todayStr}】的班級出勤與黑板紀錄至歷史庫！`);
       }
     }
 
@@ -1592,7 +1710,7 @@
       downloadAnchor.remove();
     }
 
-    // 初始化
+    // 初始化載入
     window.addEventListener('DOMContentLoaded', () => {
       loadBoardData();
 
@@ -1603,6 +1721,9 @@
 
       renderGrid();
       saveTodayToHistory(false);
+
+      // 自動檢查並同步雲端資料
+      fetchCloudData();
     });
   </script>
 </body>
