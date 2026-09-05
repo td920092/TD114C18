@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>班級日常管理與數位黑板</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --board-bg: #1e392a;
+      --board-border: #85582b;
+      --board-text: #f8fafc;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      
+      /* 出勤狀態色彩 */
+      --unknown-bg: #fff1f2;
+      --unknown-border: #f43f5e;
+      --unknown-text: #9f1239;
+      --present-bg: #e0f2fe;
+      --present-text: #0369a1;
+      --late-bg: #fef3c7;
+      --late-text: #b45309;
+      --sick-bg: #fee2e2;
+      --sick-text: #b91c1c;
+      --personal-bg: #ffedd5;
+      --personal-text: #c2410c;
+      --other-bg: #ede9fe;
+      --other-text: #6d28d9;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      padding: 16px 24px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* 頂部主導航列 (嚴格復刻圖示配置) */
+    header.main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #334155;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button.btn-action {
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      transition: all 0.15s;
+    }
+
+    button.btn-action:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    button.btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    /* 視圖切換控制 */
+    .view-panel {
+      display: none;
+    }
+    .view-panel.active {
+      display: block;
+    }
+
+    /* ================= 座位與出缺勤樣式 ================= */
+    .seat-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 16px;
+    }
+
+    .podium-indicator {
+      width: 100%;
+      text-align: center;
+      padding: 10px;
+      background: #e2e8f0;
+      color: #475569;
+      font-weight: bold;
+      border-radius: 8px;
+      letter-spacing: 6px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .seating-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+
+    .desk {
+      min-height: 86px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      background: #fafafa;
+      user-select: none;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .desk:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .desk.unknown { 
+      background: #fff1f2; 
+      border: 2.5px dashed #f43f5e; 
+      color: #9f1239;
+      box-shadow: 0 2px 5px rgba(244, 63, 94, 0.15);
+    }
+    .desk.unknown .status-badge {
+      background: #f43f5e;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .desk.present { background: var(--present-bg); border-color: #93c5fd; color: var(--present-text); }
+    .desk.late { background: var(--late-bg); border-color: #fde047; color: var(--late-text); }
+    .desk.sick { background: var(--sick-bg); border-color: #fca5a5; color: var(--sick-text); }
+    .desk.personal { background: var(--personal-bg); border-color: #fdba74; color: var(--personal-text); }
+    .desk.other { background: var(--other-bg); border-color: #c4b5fd; color: var(--other-text); }
+
+    /* 學生欄位：號碼+名字 */
+    .desk-name {
+      text-align: center;
+      font-size: 1.05rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 95%;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.85);
+      font-weight: 600;
+    }
+
+    .stats-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 4px solid var(--primary);
+      padding-left: 8px;
+      margin-bottom: 14px;
+    }
+
+    .stats-header-bar h3 {
+      font-size: 1.15rem;
+      color: #1e293b;
+      font-weight: 800;
+    }
+
+    .stats-total-tag {
+      font-size: 1.05rem;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      background: #f8fafc;
+      padding: 2px 10px;
+      border-radius: 6px;
+    }
+
+    .stats-total-num {
+      color: #0284c7;
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+
+    .stats-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-tile {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 86px;
+    }
+
+    .stat-tile-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .stat-tile-num {
+      font-size: 1.55rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .quick-settings-panel {
+      margin-top: 16px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .time-setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .time-setting-row input[type="time"] {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 0.9rem;
+      outline: none;
+      font-family: inherit;
+    }
+
+    /* ================= 班級黑板樣式 ================= */
+    .blackboard-frame {
+      background: var(--board-border);
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .blackboard-frame:fullscreen,
+    .blackboard-frame:-webkit-full-screen {
+      padding: 24px;
+      border-radius: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .blackboard {
+      background: var(--board-bg);
+      border-radius: 8px;
+      padding: 24px;
+      color: var(--board-text);
+      min-height: 680px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+      border: 2px solid rgba(255,255,255,0.08);
+      flex: 1;
+    }
+
+    .board-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px dashed rgba(255, 255, 255, 0.25);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+
+    .board-title {
+      font-size: 1.8rem;
+      letter-spacing: 3px;
+      font-weight: 700;
+      color: #fef08a;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .board-date-display {
+      font-size: 1.15rem;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    .homework-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      flex: 1;
+    }
+
+    .board-col {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .col-title {
+      padding: 12px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 2px;
+      background: rgba(0, 0, 0, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .col-title.work { color: #93c5fd; }
+    .col-title.exam { color: #fca5a5; }
+    .col-title.remind { color: #86efac; }
+
+    .board-textarea {
+      flex: 1;
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 1.25rem;
+      line-height: 1.8;
+      padding: 16px 18px;
+      resize: none;
+      outline: none;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+
+    .board-textarea::placeholder {
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .board-footer {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    /* ================= 作業訂正樣式 ================= */
+    .correction-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .correction-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .correction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .task-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--primary);
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .task-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .task-date-tag {
+      font-size: 0.85rem;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .task-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .task-badge {
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #fee2e2;
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .task-badge.all-clear {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .seat-chip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .seat-chip {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease-in-out;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: #94a3b8;
+    }
+
+    .seat-chip.needs-fix {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #dc2626;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
+    }
+
+    .seat-chip:hover {
+      transform: scale(1.06);
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ================= 歷史查詢樣式 ================= */
+    .history-layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+    }
+
+    .history-panel-section {
+      margin-bottom: 20px;
+    }
+
+    .history-result-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .history-tag-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    .history-tag-table th,
+    .history-tag-table td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .history-tag-table th {
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .history-board-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .history-board-col {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .history-board-col h4 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 4px;
+    }
+
+    /* 彈窗樣式 */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      width: 90%;
+      max-width: 440px;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .status-btn {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .check-in-btn {
+      background: #0284c7;
+      color: white;
+      border-color: #0284c7;
+      padding: 12px;
+      font-size: 1rem;
+      justify-content: center;
+    }
+    .check-in-btn:hover {
+      background: #0369a1;
+    }
+
+    .task-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .task-form-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .task-form-group input,
+    .task-form-group select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      outline: none;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 頂部主導航列 (Row 1: 左側四個頁籤，右側兩顆卡片按鈕) -->
+    <header class="main-header">
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchView('seating')">每日出缺勤</button>
+        <button class="tab-btn" onclick="switchView('blackboard')">班級黑板 (聯絡簿)</button>
+        <button class="tab-btn" onclick="switchView('corrections')">作業訂正追蹤</button>
+        <button class="tab-btn" onclick="switchView('history')">歷史紀錄查詢</button>
+      </div>
+
+      <!-- 每日出缺勤專屬工具按鈕 (如圖右上角) -->
+      <div class="toolbar-actions" id="seatingMainActions">
+        <button class="btn-action" onclick="saveTodayToHistory(true)">💾 存檔今日出勤</button>
+        <button class="btn-action" onclick="openRosterConfig()">編輯學生名單</button>
+      </div>
+
+      <!-- 黑板工具按鈕 -->
+      <div class="toolbar-actions" id="blackboardMainActions" style="display: none;">
+        <button class="btn-action" onclick="toggleBlackboardFullscreen()">⛶ 全螢幕投影</button>
+        <button class="btn-action" onclick="clearBoardText()">清空今日黑板</button>
+      </div>
+
+      <!-- 作業訂正工具按鈕 -->
+      <div class="toolbar-actions" id="correctionMainActions" style="display: none;">
+        <button class="btn-action btn-primary" onclick="openNewTaskModal()">+ 新增訂正項目</button>
+      </div>
+
+      <!-- 歷史紀錄工具按鈕 -->
+      <div class="toolbar-actions" id="historyMainActions" style="display: none;">
+        <button class="btn-action" onclick="exportHistoryData()">匯出歷史備份 (.json)</button>
+      </div>
+    </header>
+
+    <!-- 視圖一：每日出缺勤 -->
+    <div id="seatingView" class="view-panel active">
+      <div class="seat-layout">
+        <!-- 左側：講台與座位表 -->
+        <div class="card">
+          <div class="podium-indicator">講 台 / 黑 板</div>
+          <div class="seating-grid" id="seatingGrid"></div>
+        </div>
+
+        <!-- 右側：出缺席統計與快捷設定 -->
+        <div>
+          <div class="card">
+            <div class="stats-header-bar">
+              <h3>今日出缺席統計</h3>
+              <div class="stats-total-tag">
+                全班人數 <span class="stats-total-num" id="totalCount">0</span>
+              </div>
+            </div>
+
+            <div class="stats-card-grid">
+              <div class="stat-tile">
+                <div class="stat-tile-label">準時出席</div>
+                <div class="stat-tile-num" id="presentCount" style="color: #0284c7;">0</div>
+              </div>
+              <div class="stat-tile">
+                <div class="stat-tile-label">遲到人數</div>
+                <div class="stat-tile-num" id="lateCount" style="color: #b45309;">0</div>
+              </div>
+
+              <div class="stat-tile">
+                <div class="stat-tile-label">病假</div>
+                <div class="stat-tile-num" id="sickCount" style="color: #ef4444;">0</div>
+              </div>
+              <div class="stat-tile">
+                <div class="stat-tile-label">事假</div>
+                <div class="stat-tile-num" id="personalCount" style="color: #c2410c;">0</div>
+              </div>
+
+              <div class="stat-tile">
+                <div class="stat-tile-label">未到/不明</div>
+                <div class="stat-tile-num" id="unknownCount" style="color: #475569;">0</div>
+              </div>
+              <div class="stat-tile">
+                <div class="stat-tile-label">其他</div>
+                <div class="stat-tile-num" id="otherCount" style="color: #7c3aed;">0</div>
+              </div>
+            </div>
+
+            <!-- 整合設定區塊 (不干擾頂部導航列) -->
+            <div class="quick-settings-panel">
+              <div class="time-setting-row">
+                <span>⏰ 遲到判定門檻：</span>
+                <input type="time" id="lateThresholdInput" value="07:40" onchange="saveLateThreshold()" />
+              </div>
+              <button class="btn-action" style="width: 100%;" onclick="resetAttendanceToUnknown()">全部重設為未到</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 視圖二：班級黑板 -->
+    <div id="blackboardView" class="view-panel">
+      <div class="blackboard-frame" id="blackboardContainer">
+        <div class="blackboard">
+          <div class="board-header">
+            <div class="board-title">每日聯絡簿與交辦事項</div>
+            <div class="board-date-display" id="boardTodayDate">載入中...</div>
+          </div>
+
+          <div class="homework-grid">
+            <div class="board-col">
+              <div class="col-title work">作業 / 繳交</div>
+              <textarea 
+                id="boardHomework" 
+                class="board-textarea" 
+                placeholder="點擊輸入今日作業...&#10;1. 國習 L3 完&#10;2. 數習 P.24~26" 
+                oninput="autoSaveBoard()"
+              ></textarea>
+            </div>
+
+            <div class="board-col">
+              <div class="col-title exam">測驗 / 考程</div>
+              <textarea 
+                id="boardExam" 
+                class="board-textarea" 
+                placeholder="點擊輸入明日考試...&#10;1. 國文注釋小考 L3&#10;2. 英文單字小考 U2" 
+                oninput="autoSaveBoard()"
+              ></textarea>
+            </div>
+
+            <div class="board-col">
+              <div class="col-title remind">提醒 / 攜帶</div>
+              <textarea 
+                id="boardNotice" 
+                class="board-textarea" 
+                placeholder="點擊輸入提醒叮嚀...&#10;1. 帶童軍繩、彩色筆&#10;2. 發下家長通知單" 
+                oninput="autoSaveBoard()"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="board-footer">
+            <span>內容即時本機自動儲存，按右上角「全螢幕」或鍵盤 Esc 隨時切換</span>
+            <span id="saveNotice">已同步</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 視圖三：作業訂正追蹤 -->
+    <div id="correctionsView" class="view-panel">
+      <div class="correction-container">
+        <div class="correction-toolbar">
+          <div>
+            <strong style="font-size: 1.1rem;">作業/考卷訂正追蹤清單</strong>
+            <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 10px;">點擊座號可切換「待訂正 (紅)」與「完成 (灰)」</span>
+          </div>
+          <button class="btn-action btn-primary" onclick="openNewTaskModal()">+ 新增訂正項目</button>
+        </div>
+
+        <div class="correction-list" id="correctionList"></div>
+      </div>
+    </div>
+
+    <!-- 視圖四：歷史紀錄查詢 -->
+    <div id="historyView" class="view-panel">
+      <div class="history-layout">
+        <div class="card">
+          <div class="history-panel-section">
+            <h3 style="font-size: 1.15rem; color: #1e293b; border-left: 4px solid var(--primary); padding-left: 8px; margin-bottom: 12px;">📅 依特定日期查詢</h3>
+            <div class="task-form-group">
+              <label for="historyDateSelect">選擇歷史日期：</label>
+              <input type="date" id="historyDateSelect" onchange="queryHistoryByDate()" />
+            </div>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;" />
+
+          <div class="history-panel-section">
+            <h3 style="font-size: 1.15rem; color: #1e293b; border-left: 4px solid #10b981; padding-left: 8px; margin-bottom: 12px;">👤 依學生個人查詢</h3>
+            <div class="task-form-group">
+              <label for="historyStudentSelect">選擇學生姓名：</label>
+              <select id="historyStudentSelect" onchange="queryHistoryByStudent()">
+                <option value="">-- 請選擇學生 --</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px; font-size: 0.85rem; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 8px;">
+            💡 <strong>查詢說明：</strong><br/>
+            班級歷史日誌各假別已簡化為「學生號碼」快速檢索，支援全學期個人累計分析。
+          </div>
+        </div>
+
+        <div class="history-result-box" id="historyResultDisplay">
+          <div style="text-align: center; color: #94a3b8; padding: 60px 0;">
+            👈 請由左側選擇「日期」或「學生」進行歷史紀錄查詢
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增作業訂正彈窗 -->
+  <div class="modal" id="newTaskModal">
+    <div class="modal-content">
+      <h3 style="font-size: 1.2rem; margin-bottom: 6px;">新增作業訂正項目</h3>
+      
+      <div class="task-form-group">
+        <label for="taskDateInput">指派 / 記錄日期：</label>
+        <input type="date" id="taskDateInput" />
+      </div>
+
+      <div class="task-form-group">
+        <label for="taskTitleInput">作業或測驗名稱：</label>
+        <input type="text" id="taskTitleInput" placeholder="例如：數學作業簿 P.18、英文單字訂正" />
+      </div>
+
+      <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-action" onclick="closeNewTaskModal()">取消</button>
+        <button class="btn-action btn-primary" onclick="confirmAddTask()">確定建立</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 點名與打卡彈窗 -->
+  <div class="modal" id="studentModal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <h3 id="modalStudentName" style="font-size: 1.3rem;">學生姓名</h3>
+        <span id="modalCurrentStatus" style="font-size: 0.85rem; color: var(--text-muted);">目前：未到</span>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="status-btn check-in-btn" onclick="checkInCurrentTime()">
+          <span>⏱ 現在時間打卡</span>
+          <span id="liveCurrentTime" style="font-size: 0.9rem; font-weight: normal; opacity: 0.9;"></span>
+        </button>
+
+        <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+
+        <button class="status-btn" style="background: var(--present-bg); color: var(--present-text);" onclick="updateStatus('present')">
+          <span>手動設為：出席 (準時)</span>
+        </button>
+        <button class="status-btn" style="background: var(--late-bg); color: var(--late-text);" onclick="updateStatus('late')">
+          <span>手動設為：遲到</span>
+        </button>
+        <button class="status-btn" style="background: var(--sick-bg); color: var(--sick-text);" onclick="updateStatus('sick')">
+          <span>病假</span>
+        </button>
+        <button class="status-btn" style="background: var(--personal-bg); color: var(--personal-text);" onclick="updateStatus('personal')">
+          <span>事假</span>
+        </button>
+        <button class="status-btn" style="background: var(--other-bg); color: var(--other-text);" onclick="updateStatus('other')">
+          <span>其他 (公假/喪假等)</span>
+        </button>
+        <button class="status-btn" style="background: #fff1f2; color: #9f1239;" onclick="updateStatus('unknown')">
+          <span>重設為：未到 / 不明</span>
+        </button>
+      </div>
+
+      <div style="margin-top: 14px; text-align: right;">
+        <button class="btn-action" onclick="closeModal()">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_STUDENTS = Array.from({ length: 28 }, (_, i) => ({
+      id: i + 1,
+      seat: i + 1,
+      name: `學生${i + 1}`,
+      status: 'unknown',
+      checkInTime: ''
+    }));
+
+    const getTodayDateStr = () => {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    };
+
+    const DEFAULT_CORRECTIONS = [
+      {
+        id: 'c1',
+        title: '數學習作 P.20~22',
+        date: getTodayDateStr(),
+        needFixSeats: [3, 7, 14, 21]
+      }
+    ];
+
+    let students = JSON.parse(localStorage.getItem('cm_students')) || DEFAULT_STUDENTS;
+    let correctionTasks = JSON.parse(localStorage.getItem('cm_corrections')) || DEFAULT_CORRECTIONS;
+    let lateThreshold = localStorage.getItem('cm_late_threshold') || '07:40';
+    let historyLogs = JSON.parse(localStorage.getItem('cm_history_logs')) || {};
+    let currentSelectedStudent = null;
+
+    // 視圖切換 (0:seating, 1:blackboard, 2:corrections, 3:history)
+    function switchView(viewName) {
+      saveTodayToHistory(false);
+
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+      
+      document.getElementById('seatingMainActions').style.display = 'none';
+      document.getElementById('blackboardMainActions').style.display = 'none';
+      document.getElementById('correctionMainActions').style.display = 'none';
+      document.getElementById('historyMainActions').style.display = 'none';
+
+      if (viewName === 'seating') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('seatingView').classList.add('active');
+        document.getElementById('seatingMainActions').style.display = 'flex';
+        renderGrid();
+      } else if (viewName === 'blackboard') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('blackboardView').classList.add('active');
+        document.getElementById('blackboardMainActions').style.display = 'flex';
+      } else if (viewName === 'corrections') {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('correctionsView').classList.add('active');
+        document.getElementById('correctionMainActions').style.display = 'flex';
+        renderCorrections();
+      } else if (viewName === 'history') {
+        document.querySelectorAll('.tab-btn')[3].classList.add('active');
+        document.getElementById('historyView').classList.add('active');
+        document.getElementById('historyMainActions').style.display = 'flex';
+        initHistoryView();
+      }
+    }
+
+    // ================= 黑板功能 =================
+    function toggleBlackboardFullscreen() {
+      const boardElem = document.getElementById('blackboardContainer');
+      if (!document.fullscreenElement) {
+        if (boardElem.requestFullscreen) {
+          boardElem.requestFullscreen();
+        } else if (boardElem.webkitRequestFullscreen) {
+          boardElem.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    function autoSaveBoard() {
+      const data = {
+        homework: document.getElementById('boardHomework').value,
+        exam: document.getElementById('boardExam').value,
+        notice: document.getElementById('boardNotice').value
+      };
+      localStorage.setItem('cm_board_data', JSON.stringify(data));
+      const notice = document.getElementById('saveNotice');
+      notice.textContent = '自動儲存中...';
+      setTimeout(() => { notice.textContent = '已同步'; }, 500);
+      saveTodayToHistory(false);
+    }
+
+    function loadBoardData() {
+      const saved = localStorage.getItem('cm_board_data');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          document.getElementById('boardHomework').value = data.homework || '';
+          document.getElementById('boardExam').value = data.exam || '';
+          document.getElementById('boardNotice').value = data.notice || '';
+        } catch (e) {}
+      }
+
+      const now = new Date();
+      const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+      document.getElementById('boardTodayDate').textContent = 
+        `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 (星期${weekDays[now.getDay()]})`;
+    }
+
+    function clearBoardText() {
+      if (confirm('確定要清空今天黑板上的所有內容嗎？')) {
+        document.getElementById('boardHomework').value = '';
+        document.getElementById('boardExam').value = '';
+        document.getElementById('boardNotice').value = '';
+        autoSaveBoard();
+      }
+    }
+
+    // ================= 作業訂正功能 =================
+    function renderCorrections() {
+      const list = document.getElementById('correctionList');
+      list.innerHTML = '';
+
+      if (correctionTasks.length === 0) {
+        list.innerHTML = `<div style="text-align:center; padding: 40px; color:#94a3b8; background:#fff; border-radius:12px;">目前沒有訂正項目，點擊右上角「+ 新增訂正項目」開始建立！</div>`;
+        return;
+      }
+
+      correctionTasks.forEach(task => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+
+        const needCount = task.needFixSeats.length;
+        const badgeClass = needCount === 0 ? 'task-badge all-clear' : 'task-badge';
+        const badgeText = needCount === 0 ? '全數訂正完成 🎉' : `尚有 ${needCount} 人待訂正`;
+        const taskDate = task.date || getTodayDateStr();
+
+        const chipsHtml = students.map(s => {
+          const isNeedFix = task.needFixSeats.includes(s.seat);
+          const chipClass = isNeedFix ? 'seat-chip needs-fix' : 'seat-chip';
+          return `<div class="${chipClass}" title="${s.seat}號 ${s.name}" onclick="toggleSeatCorrection('${task.id}', ${s.seat})">${s.seat}</div>`;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="task-header">
+            <div class="task-title-group">
+              <span class="task-date-tag">📅 ${taskDate}</span>
+              <span class="task-title">${task.title}</span>
+              <span class="${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="task-actions">
+              <button class="btn-action" onclick="markAllTask('${task.id}', true)">全選待訂正</button>
+              <button class="btn-action" onclick="markAllTask('${task.id}', false)">全數完成</button>
+              <button class="btn-action" style="color: #ef4444;" onclick="deleteCorrectionTask('${task.id}')">刪除</button>
+            </div>
+          </div>
+          <div class="seat-chip-grid">
+            ${chipsHtml}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function toggleSeatCorrection(taskId, seatNum) {
+      const task = correctionTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const idx = task.needFixSeats.indexOf(seatNum);
+      if (idx > -1) {
+        task.needFixSeats.splice(idx, 1);
+      } else {
+        task.needFixSeats.push(seatNum);
+      }
+      saveCorrections();
+      renderCorrections();
+    }
+
+    function markAllTask(taskId, isNeedFix) {
+      const task = correctionTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      if (isNeedFix) {
+        task.needFixSeats = students.map(s => s.seat);
+      } else {
+        task.needFixSeats = [];
+      }
+      saveCorrections();
+      renderCorrections();
+    }
+
+    function openNewTaskModal() {
+      document.getElementById('taskDateInput').value = getTodayDateStr();
+      document.getElementById('taskTitleInput').value = '';
+      document.getElementById('newTaskModal').style.display = 'flex';
+      document.getElementById('taskTitleInput').focus();
+    }
+
+    function closeNewTaskModal() {
+      document.getElementById('newTaskModal').style.display = 'none';
+    }
+
+    function confirmAddTask() {
+      const title = document.getElementById('taskTitleInput').value.trim();
+      const date = document.getElementById('taskDateInput').value;
+
+      if (!title) {
+        alert('請輸入作業或測驗名稱！');
+        return;
+      }
+
+      const newTask = {
+        id: 'c_' + Date.now(),
+        title: title,
+        date: date || getTodayDateStr(),
+        needFixSeats: []
+      };
+
+      correctionTasks.unshift(newTask);
+      saveCorrections();
+      renderCorrections();
+      closeNewTaskModal();
+    }
+
+    function deleteCorrectionTask(taskId) {
+      if (confirm('確定要刪除這筆作業訂正項目嗎？')) {
+        correctionTasks = correctionTasks.filter(t => t.id !== taskId);
+        saveCorrections();
+        renderCorrections();
+      }
+    }
+
+    function saveCorrections() {
+      localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+    }
+
+    // ================= 每日出缺勤功能 =================
+    function saveLateThreshold() {
+      const val = document.getElementById('lateThresholdInput').value;
+      if (val) {
+        lateThreshold = val;
+        localStorage.setItem('cm_late_threshold', val);
+      }
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('seatingGrid');
+      grid.innerHTML = '';
+
+      students.forEach(student => {
+        const desk = document.createElement('div');
+        const st = student.status || 'unknown';
+        desk.className = `desk ${st}`;
+        desk.onclick = () => openStudentModal(student);
+
+        const statusLabelMap = {
+          unknown: '未到',
+          present: '出席',
+          late: '遲到',
+          sick: '病假',
+          personal: '事假',
+          other: '其他'
+        };
+
+        let labelText = statusLabelMap[st] || '未到';
+        if (student.checkInTime && (st === 'present' || st === 'late')) {
+          labelText += ` (${student.checkInTime})`;
+        }
+
+        // 格式化顯示「號碼+名字」
+        let displayName = student.name || '';
+        if (!displayName.includes(String(student.seat))) {
+          displayName = `${student.seat} 號 ${displayName}`;
+        }
+
+        desk.innerHTML = `
+          <div class="desk-name">${displayName}</div>
+          <div class="status-badge">${labelText}</div>
+        `;
+        grid.appendChild(desk);
+      });
+
+      updateStats();
+    }
+
+    function updateStats() {
+      const total = students.length;
+      const present = students.filter(s => s.status === 'present').length;
+      const late = students.filter(s => s.status === 'late').length;
+      const sick = students.filter(s => s.status === 'sick').length;
+      const personal = students.filter(s => s.status === 'personal').length;
+      const unknown = students.filter(s => !s.status || s.status === 'unknown').length;
+      const other = students.filter(s => s.status === 'other').length;
+
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('presentCount').textContent = present;
+      document.getElementById('lateCount').textContent = late;
+      document.getElementById('sickCount').textContent = sick;
+      document.getElementById('personalCount').textContent = personal;
+      document.getElementById('unknownCount').textContent = unknown;
+      document.getElementById('otherCount').textContent = other;
+    }
+
+    function openStudentModal(student) {
+      currentSelectedStudent = student;
+      document.getElementById('modalStudentName').textContent = `${student.seat} 號 ${student.name}`;
+      
+      const statusMap = {
+        unknown: '未到 / 不明',
+        present: '出席 (準時)',
+        late: '遲到',
+        sick: '病假',
+        personal: '事假',
+        other: '其他'
+      };
+      const curText = statusMap[student.status || 'unknown'] + (student.checkInTime ? ` (${student.checkInTime})` : '');
+      document.getElementById('modalCurrentStatus').textContent = `目前狀態：${curText}`;
+
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('liveCurrentTime').textContent = `(${hh}:${mm})`;
+
+      document.getElementById('studentModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('studentModal').style.display = 'none';
+      currentSelectedStudent = null;
+    }
+
+    function checkInCurrentTime() {
+      if (!currentSelectedStudent) return;
+
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${hh}:${mm}`;
+
+      const threshold = document.getElementById('lateThresholdInput').value || '07:40';
+      const isLate = currentTimeStr > threshold;
+
+      currentSelectedStudent.status = isLate ? 'late' : 'present';
+      currentSelectedStudent.checkInTime = currentTimeStr;
+
+      localStorage.setItem('cm_students', JSON.stringify(students));
+      renderGrid();
+      closeModal();
+      saveTodayToHistory(false);
+    }
+
+    function updateStatus(status) {
+      if (currentSelectedStudent) {
+        currentSelectedStudent.status = status;
+        if (status !== 'present' && status !== 'late') {
+          currentSelectedStudent.checkInTime = '';
+        }
+        localStorage.setItem('cm_students', JSON.stringify(students));
+        renderGrid();
+        closeModal();
+        saveTodayToHistory(false);
+      }
+    }
+
+    function resetAttendanceToUnknown() {
+      if (confirm('確定要將全班今日出勤重設為「未到 / 不明」嗎？')) {
+        students.forEach(s => {
+          s.status = 'unknown';
+          s.checkInTime = '';
+        });
+        localStorage.setItem('cm_students', JSON.stringify(students));
+        renderGrid();
+        saveTodayToHistory(false);
+      }
+    }
+
+    function openRosterConfig() {
+      const currentList = students.map(s => `${s.seat} ${s.name}`).join('\n');
+      const hint = '請輸入學生名單，每行一位。\n支援格式：「座號 姓名」（例如：01 王小明 或 1 王小明）：';
+      const raw = prompt(hint, currentList);
+
+      if (raw !== null && raw.trim() !== '') {
+        const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
+        
+        students = lines.map((line, idx) => {
+          const parts = line.split(/\s+/);
+          let seat = idx + 1;
+          let name = line;
+
+          if (parts.length >= 2 && /^\d+$/.test(parts[0])) {
+            seat = parseInt(parts[0], 10);
+            name = parts.slice(1).join(' ');
+          } else {
+            const match = line.match(/^(\d+)[.\s、]*(.*)$/);
+            if (match && match[1] && match[2]) {
+              seat = parseInt(match[1], 10);
+              name = match[2].trim();
+            }
+          }
+
+          return {
+            id: seat,
+            seat: seat,
+            name: name,
+            status: 'unknown',
+            checkInTime: ''
+          };
+        });
+
+        students.sort((a, b) => a.seat - b.seat);
+
+        localStorage.setItem('cm_students', JSON.stringify(students));
+        renderGrid();
+        saveTodayToHistory(false);
+        if (document.getElementById('correctionsView').classList.contains('active')) {
+          renderCorrections();
+        }
+      }
+    }
+
+    // ================= 歷史紀錄與自動/手動備份 =================
+    function saveTodayToHistory(showAlert = false) {
+      const todayStr = getTodayDateStr();
+      const boardData = JSON.parse(localStorage.getItem('cm_board_data') || '{}');
+
+      historyLogs[todayStr] = {
+        date: todayStr,
+        students: JSON.parse(JSON.stringify(students)),
+        board: {
+          homework: boardData.homework || '',
+          exam: boardData.exam || '',
+          notice: boardData.notice || ''
+        },
+        savedAt: new Date().toLocaleTimeString('zh-TW', { hour12: false })
+      };
+
+      localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
+      if (showAlert) {
+        alert(`已成功手動備份【${todayStr}】的班級出勤與黑板紀錄至歷史庫！`);
+      }
+    }
+
+    function initHistoryView() {
+      const todayStr = getTodayDateStr();
+      const dateInput = document.getElementById('historyDateSelect');
+      if (!dateInput.value) {
+        dateInput.value = todayStr;
+      }
+
+      const select = document.getElementById('historyStudentSelect');
+      select.innerHTML = '<option value="">-- 請選擇學生 --</option>';
+      students.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.seat} 號 ${s.name}`;
+        select.appendChild(opt);
+      });
+
+      queryHistoryByDate();
+    }
+
+    function queryHistoryByDate() {
+      const dateStr = document.getElementById('historyDateSelect').value;
+      const display = document.getElementById('historyResultDisplay');
+
+      if (!dateStr) {
+        display.innerHTML = `<div style="text-align:center; color:#94a3b8; padding:40px;">請選擇有效日期</div>`;
+        return;
+      }
+
+      const log = historyLogs[dateStr];
+      if (!log) {
+        display.innerHTML = `
+          <div style="text-align:center; padding: 50px 20px; color:#64748b;">
+            <h3 style="font-size:1.3rem; margin-bottom:8px;">無【${dateStr}】的歷史紀錄</h3>
+            <p>系統目前尚未記錄該日的出勤或黑板存檔。</p>
+          </div>
+        `;
+        return;
+      }
+
+      const logStudents = log.students || [];
+      const presentList = logStudents.filter(s => s.status === 'present');
+      const lateList = logStudents.filter(s => s.status === 'late');
+      const sickList = logStudents.filter(s => s.status === 'sick');
+      const personalList = logStudents.filter(s => s.status === 'personal');
+      const unknownList = logStudents.filter(s => !s.status || s.status === 'unknown');
+      const otherList = logStudents.filter(s => s.status === 'other');
+
+      const formatSeatsOnly = list => list.length > 0 
+        ? list.map(s => `${s.seat}號${s.checkInTime ? ` (${s.checkInTime})` : ''}`).join('、 ') 
+        : '<span style="color:#94a3b8;">無</span>';
+
+      display.innerHTML = `
+        <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:baseline;">
+          <h2 style="font-size:1.4rem; color:#1e293b;">📅 ${dateStr} 班級歷史日誌</h2>
+          <span style="font-size:0.85rem; color:#64748b;">自動備份時間：${log.savedAt || '當日'}</span>
+        </div>
+
+        <h3 style="font-size:1.1rem; margin-bottom:10px; color:#334155;">1. 出缺席號碼列表 (全班 ${logStudents.length} 人)</h3>
+        <table class="history-tag-table">
+          <tr>
+            <th style="width: 140px;">準時出席 (${presentList.length} 人)</th>
+            <td style="color:#0369a1;">${formatSeatsOnly(presentList)}</td>
+          </tr>
+          <tr>
+            <th style="color:#b45309;">遲到 (${lateList.length} 人)</th>
+            <td style="color:#b45309; font-weight:700;">${formatSeatsOnly(lateList)}</td>
+          </tr>
+          <tr>
+            <th style="color:#b91c1c;">病假 (${sickList.length} 人)</th>
+            <td style="color:#b91c1c;">${formatSeatsOnly(sickList)}</td>
+          </tr>
+          <tr>
+            <th style="color:#c2410c;">事假 (${personalList.length} 人)</th>
+            <td style="color:#c2410c;">${formatSeatsOnly(personalList)}</td>
+          </tr>
+          <tr>
+            <th style="color:#9f1239;">未到 / 不明 (${unknownList.length} 人)</th>
+            <td style="color:#9f1239; font-weight:bold;">${formatSeatsOnly(unknownList)}</td>
+          </tr>
+          <tr>
+            <th style="color:#6d28d9;">其他假別 (${otherList.length} 人)</th>
+            <td style="color:#6d28d9;">${formatSeatsOnly(otherList)}</td>
+          </tr>
+        </table>
+
+        <h3 style="font-size:1.1rem; margin-top:24px; margin-bottom:10px; color:#334155;">2. 當日聯絡簿備份</h3>
+        <div class="history-board-preview">
+          <div class="history-board-col">
+            <h4 style="color:#0284c7;">作業 / 繳交</h4>
+            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${log.board.homework || '無紀錄'}</div>
+          </div>
+          <div class="history-board-col">
+            <h4 style="color:#dc2626;">測驗 / 考程</h4>
+            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${log.board.exam || '無紀錄'}</div>
+          </div>
+          <div class="history-board-col">
+            <h4 style="color:#16a34a;">提醒 / 叮嚀</h4>
+            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${log.board.notice || '無紀錄'}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function queryHistoryByStudent() {
+      const studentId = parseInt(document.getElementById('historyStudentSelect').value);
+      const display = document.getElementById('historyResultDisplay');
+
+      if (!studentId) {
+        queryHistoryByDate();
+        return;
+      }
+
+      const studentObj = students.find(s => s.id === studentId);
+      const studentName = studentObj ? `${studentObj.seat} 號 ${studentObj.name}` : '該學生';
+
+      const dateKeys = Object.keys(historyLogs).sort().reverse();
+      let totalDays = 0;
+      let lateCount = 0;
+      let sickCount = 0;
+      let personalCount = 0;
+      let unknownCount = 0;
+      let logRows = [];
+
+      dateKeys.forEach(d => {
+        const dayRecord = historyLogs[d];
+        if (dayRecord && dayRecord.students) {
+          const sRecord = dayRecord.students.find(s => s.id === studentId || s.seat === (studentObj && studentObj.seat));
+          if (sRecord) {
+            totalDays++;
+            const st = sRecord.status || 'unknown';
+            if (st === 'late') lateCount++;
+            if (st === 'sick') sickCount++;
+            if (st === 'personal') personalCount++;
+            if (st === 'unknown') unknownCount++;
+
+            const statusLabelMap = {
+              present: '<span style="color:#0369a1; font-weight:600;">出席</span>',
+              late: `<span style="color:#b45309; font-weight:bold;">遲到 (${sRecord.checkInTime || '紀錄'})</span>`,
+              sick: '<span style="color:#b91c1c; font-weight:bold;">病假</span>',
+              personal: '<span style="color:#c2410c; font-weight:bold;">事假</span>',
+              other: '<span style="color:#6d28d9;">其他</span>',
+              unknown: '<span style="color:#9f1239; font-weight:bold;">未到</span>'
+            };
+
+            logRows.push(`
+              <tr>
+                <td>${d}</td>
+                <td>${statusLabelMap[st] || '未到'}</td>
+              </tr>
+            `);
+          }
+        }
+      });
+
+      display.innerHTML = `
+        <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 20px;">
+          <h2 style="font-size:1.4rem; color:#1e293b;">👤 ${studentName} - 個人出勤履歷</h2>
+          <p style="font-size:0.9rem; color:#64748b; margin-top:4px;">統計歷史中已存檔的 ${totalDays} 個上課日</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:20px;">
+          <div class="stat-tile">
+            <div class="stat-tile-label">累計遲到</div>
+            <div class="stat-tile-num" style="color:#b45309;">${lateCount} 次</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-tile-label">病假</div>
+            <div class="stat-tile-num" style="color:#b91c1c;">${sickCount} 天</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-tile-label">事假</div>
+            <div class="stat-tile-num" style="color:#c2410c;">${personalCount} 天</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-tile-label">未到/缺席</div>
+            <div class="stat-tile-num" style="color:#9f1239;">${unknownCount} 天</div>
+          </div>
+        </div>
+
+        <h3 style="font-size:1.1rem; margin-bottom:10px; color:#334155;">每日詳細出勤紀錄明細</h3>
+        <table class="history-tag-table">
+          <thead>
+            <tr>
+              <th style="width: 160px;">日期</th>
+              <th>當日出勤狀態</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${logRows.length > 0 ? logRows.join('') : '<tr><td colspan="2" style="text-align:center; color:#94a3b8;">暫無紀錄</td></tr>'}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function exportHistoryData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(historyLogs, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `班級歷史紀錄備份_${getTodayDateStr()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // 初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      loadBoardData();
+
+      const savedThreshold = localStorage.getItem('cm_late_threshold');
+      if (savedThreshold) {
+        document.getElementById('lateThresholdInput').value = savedThreshold;
+      }
+
+      renderGrid();
+      saveTodayToHistory(false);
+    });
+  </script>
+</body>
+</html>
