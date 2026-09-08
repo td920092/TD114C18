@@ -877,12 +877,12 @@
       padding-bottom: 4px;
     }
 
-    /* 彈窗樣式 */
+    /* ================= 彈窗樣式 (自訂學生打卡排版) ================= */
     .modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.55);
       align-items: center;
       justify-content: center;
       z-index: 1000;
@@ -890,42 +890,88 @@
 
     .modal-content {
       background: white;
-      border-radius: 10px;
-      padding: 20px;
-      width: 90%;
-      max-width: 440px;
+      border-radius: 14px;
+      padding: 22px;
+      width: 92%;
+      max-width: 460px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
 
-    .modal-actions {
+    /* 打卡專屬面板排版 */
+    .checkin-modal-container {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
       margin-top: 14px;
     }
 
-    .status-btn {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid transparent;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.95rem;
+    /* 頂部獨立全寬打卡按鈕 */
+    .btn-live-checkin {
+      width: 100%;
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 2px;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .btn-live-checkin:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .btn-live-checkin:active {
+      transform: translateY(1px);
+    }
+
+    /* 2 欄 3 列 網格 */
+    .checkin-grid-2x3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-grid-action {
+      padding: 12px 6px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      font-size: 1.02rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+      display: flex;
+      justify-content: center;
       align-items: center;
     }
 
-    .check-in-btn {
-      background: #0284c7;
-      color: white;
-      border-color: #0284c7;
-      padding: 12px;
-      font-size: 1rem;
-      justify-content: center;
+    .btn-grid-action:hover {
+      filter: brightness(0.96);
+      transform: translateY(-1px);
     }
-    .check-in-btn:hover {
-      background: #0369a1;
+
+    .btn-grid-action:active {
+      transform: translateY(1px);
     }
+
+    /* 各假別細節配色 (復刻附圖) */
+    .btn-present { background: var(--present-bg); color: var(--present-text); }
+    .btn-late    { background: var(--late-bg); color: var(--late-text); }
+    .btn-sick    { background: var(--sick-bg); color: var(--sick-text); }
+    .btn-personal{ background: var(--personal-bg); color: var(--personal-text); }
+    .btn-other   { background: var(--other-bg); color: var(--other-text); }
+    .btn-unknown { background: #fff1f2; color: #9f1239; border-color: #fecdd3; }
 
     .task-form-group {
       display: flex;
@@ -992,7 +1038,7 @@
         <button class="btn-action btn-primary" onclick="openNewTaskModal()">+ 新增訂正項目</button>
       </div>
 
-      <!-- 歷史紀錄工具 (新增「匯入歷史備份」按鈕與隱藏的 file input) -->
+      <!-- 歷史紀錄工具 -->
       <div class="toolbar-actions" id="historyMainActions" style="display: none;">
         <input type="file" id="historyFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)" />
         <button class="btn-action" onclick="triggerImportFileInput()">📥 匯入歷史備份 (.json)</button>
@@ -1055,6 +1101,7 @@
               <button class="btn-action" style="width: 100%;" onclick="resetAttendanceToUnknown()">全部重設為未到</button>
             </div>
 
+            <!-- 內建歷史查詢區塊 -->
             <div class="embedded-history-card">
               <div class="embedded-history-title">
                 <span>📅 歷史出勤速查</span>
@@ -1142,7 +1189,7 @@
                 ></textarea>
               </div>
 
-              <!-- 科目成績表格 -->
+              <!-- 科目成績九宮格表格 -->
               <div class="subject-scores-card">
                 <table class="score-table">
                   <tr>
@@ -1263,43 +1310,34 @@
     </div>
   </div>
 
-  <!-- 點名與打卡彈窗 -->
+  <!-- 點名與打卡彈窗 (依附圖重構) -->
   <div class="modal" id="studentModal">
     <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: baseline;">
-        <h3 id="modalStudentName" style="font-size: 1.3rem;">學生姓名</h3>
-        <span id="modalCurrentStatus" style="font-size: 0.85rem; color: var(--text-muted);">目前：未到</span>
+      <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+        <h3 id="modalStudentName" style="font-size: 1.3rem; color: #0f172a;">學生姓名</h3>
+        <span id="modalCurrentStatus" style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600;">目前：未到</span>
       </div>
       
-      <div class="modal-actions">
-        <button class="status-btn check-in-btn" onclick="checkInCurrentTime()">
-          <span>⏱ 現在時間打卡</span>
-          <span id="liveCurrentTime" style="font-size: 0.9rem; font-weight: normal; opacity: 0.9;"></span>
+      <div class="checkin-modal-container">
+        <!-- 頂部大按鈕：⏱ 現在時間打卡(當前時間) -->
+        <button class="btn-live-checkin" onclick="checkInCurrentTime()">
+          <span>⏱ 現在時間打卡</span><span id="liveCurrentTime"></span>
         </button>
 
-        <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
-
-        <button class="status-btn" style="background: var(--present-bg); color: var(--present-text);" onclick="updateStatus('present')">
-          <span>手動設為：出席 (準時)</span>
-        </button>
-        <button class="status-btn" style="background: var(--late-bg); color: var(--late-text);" onclick="updateStatus('late')">
-          <span>手動設為：遲到</span>
-        </button>
-        <button class="status-btn" style="background: var(--sick-bg); color: var(--sick-text);" onclick="updateStatus('sick')">
-          <span>病假</span>
-        </button>
-        <button class="status-btn" style="background: var(--personal-bg); color: var(--personal-text);" onclick="updateStatus('personal')">
-          <span>事假</span>
-        </button>
-        <button class="status-btn" style="background: var(--other-bg); color: var(--other-text);" onclick="updateStatus('other')">
-          <span>其他 (公假/喪假等)</span>
-        </button>
-        <button class="status-btn" style="background: #fff1f2; color: #9f1239;" onclick="updateStatus('unknown')">
-          <span>重設為：未到 / 不明</span>
-        </button>
+        <!-- 2 欄 3 列 網格 -->
+        <div class="checkin-grid-2x3">
+          <button class="btn-grid-action btn-present" onclick="updateStatus('present')">手動設為：出席 (準時)</button>
+          <button class="btn-grid-action btn-late" onclick="updateStatus('late')">手動設為：遲到</button>
+          
+          <button class="btn-grid-action btn-sick" onclick="updateStatus('sick')">病假</button>
+          <button class="btn-grid-action btn-personal" onclick="updateStatus('personal')">事假</button>
+          
+          <button class="btn-grid-action btn-other" onclick="updateStatus('other')">其他 (公假/喪假等)</button>
+          <button class="btn-grid-action btn-unknown" onclick="updateStatus('unknown')">重設為：未到 / 不明</button>
+        </div>
       </div>
 
-      <div style="margin-top: 14px; text-align: right;">
+      <div style="margin-top: 16px; text-align: right;">
         <button class="btn-action" onclick="closeModal()">關閉</button>
       </div>
     </div>
@@ -1341,7 +1379,6 @@
     let currentSelectedStudent = null;
     let syncDebounceTimer = null;
 
-    // 同步更新所有頁籤的狀態指示器
     function setAllSyncStatus(state, text) {
       document.querySelectorAll('.sync-dot-el').forEach(el => {
         el.className = `status-dot ${state} sync-dot-el`;
@@ -1900,6 +1937,7 @@
       const curText = statusMap[student.status || 'unknown'] + (student.checkInTime ? ` (${student.checkInTime})` : '');
       document.getElementById('modalCurrentStatus').textContent = `目前狀態：${curText}`;
 
+      // 產生 (HH:mm)
       const now = new Date();
       const hh = String(now.getHours()).padStart(2, '0');
       const mm = String(now.getMinutes()).padStart(2, '0');
@@ -2007,7 +2045,7 @@
       }
     }
 
-    // ================= 歷史紀錄、備份匯出與匯入核心 =================
+    // ================= 歷史紀錄與自動備份 =================
     function saveTodayToHistory(showAlert = false) {
       const todayStr = getTodayDateStr();
       const boardData = JSON.parse(localStorage.getItem('cm_board_data') || '{}');
@@ -2241,12 +2279,10 @@
       downloadAnchor.remove();
     }
 
-    // 觸發選擇備份檔
     function triggerImportFileInput() {
       document.getElementById('historyFileInput').click();
     }
 
-    // 處理匯入 JSON 檔案
     function handleImportFile(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -2256,11 +2292,9 @@
         try {
           const importedData = JSON.parse(e.target.result);
           if (typeof importedData === 'object' && importedData !== null) {
-            // 合併既有歷史紀錄與新匯入的歷史紀錄
             historyLogs = Object.assign({}, historyLogs, importedData);
             localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
 
-            // 如果最新一筆有學生名單，且目前的學生名單仍是預設的「學生1...」，則一併更新當前名單
             const dates = Object.keys(importedData).sort().reverse();
             if (dates.length > 0 && importedData[dates[0]].students) {
               const sampleName = students[0] ? students[0].name : '';
@@ -2277,10 +2311,7 @@
               }
             }
 
-            // 同步推送至 Google 試算表
             triggerCloudPush();
-
-            // 重新整理歷史查詢下拉選單與畫面
             initHistoryView();
 
             alert(`✅ 成功匯入 ${Object.keys(importedData).length} 天的歷史備份紀錄！已同步至雲端。`);
@@ -2291,7 +2322,6 @@
           alert('解析備份檔案失敗，請確認檔案是否完整！');
           console.error(err);
         }
-        // 重設 input 讓同檔名也能再次選取
         event.target.value = '';
       };
       reader.readAsText(file, 'UTF-8');
