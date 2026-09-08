@@ -90,7 +90,7 @@
 
     .toolbar-actions {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
     }
 
@@ -161,7 +161,7 @@
     /* ================= 座位與出缺勤樣式 ================= */
     .seat-layout {
       display: grid;
-      grid-template-columns: 1fr 350px;
+      grid-template-columns: 1fr 360px;
       gap: 16px;
     }
 
@@ -251,72 +251,86 @@
 
     .stats-header-bar {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      gap: 6px;
       border-left: 4px solid var(--primary);
-      padding-left: 8px;
+      padding-left: 10px;
       margin-bottom: 14px;
     }
 
-    .stats-header-bar h3 {
+    .stats-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .stats-header-top h3 {
       font-size: 1.15rem;
       color: #1e293b;
       font-weight: 800;
     }
 
+    .stats-today-date {
+      font-size: 0.95rem;
+      color: #475569;
+      font-weight: 600;
+      background: #f1f5f9;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      width: fit-content;
+    }
+
     .stats-total-tag {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       color: #334155;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       font-weight: 600;
-      background: #f8fafc;
-      padding: 2px 10px;
-      border-radius: 6px;
     }
 
     .stats-total-num {
       color: #0284c7;
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 800;
     }
 
     .stats-card-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
 
     .stat-tile {
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
-      padding: 14px 10px;
+      padding: 12px 8px;
       text-align: center;
       box-shadow: 0 1px 3px rgba(0,0,0,0.03);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 86px;
+      min-height: 80px;
     }
 
     .stat-tile-label {
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 700;
       color: #1e293b;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .stat-tile-num {
-      font-size: 1.55rem;
+      font-size: 1.45rem;
       font-weight: 800;
       line-height: 1;
     }
 
     .quick-settings-panel {
-      margin-top: 16px;
+      margin-top: 14px;
       background: #f8fafc;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -344,8 +358,27 @@
       font-family: inherit;
     }
 
+    .embedded-history-card {
+      margin-top: 14px;
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .embedded-history-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     /* ================= 班級黑板樣式 ================= */
     .blackboard-frame {
+      position: relative;
       background: var(--board-border);
       padding: 16px;
       border-radius: 16px;
@@ -360,6 +393,37 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+
+    .exit-fullscreen-btn {
+      display: none;
+      position: absolute;
+      top: 26px;
+      right: 28px;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.6);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+    }
+
+    .exit-fullscreen-btn:hover {
+      background: rgba(239, 68, 68, 0.85);
+      border-color: #ef4444;
+      color: #ffffff;
+    }
+
+    .blackboard-frame:fullscreen .exit-fullscreen-btn,
+    .blackboard-frame:-webkit-full-screen .exit-fullscreen-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .blackboard {
@@ -629,7 +693,7 @@
       justify-content: space-between;
       align-items: center;
       font-size: 0.9rem;
-      opacity: 0.75;
+      opacity: 0.85;
       padding-top: 6px;
     }
 
@@ -889,7 +953,7 @@
 </head>
 <body>
   <div class="container">
-    <!-- 頂部主導航列 (包含雲端同步指示器) -->
+    <!-- 頂部主導航列 -->
     <header class="main-header">
       <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchView('seating')">每日出缺勤</button>
@@ -898,26 +962,40 @@
         <button class="tab-btn" onclick="switchView('history')">歷史紀錄查詢</button>
       </div>
 
+      <!-- 每日出缺勤專屬工具 -->
       <div class="toolbar-actions" id="seatingMainActions">
-        <!-- 雲端同步狀態燈 -->
-        <div class="sync-status-indicator" id="cloudSyncBadge" title="Google 試算表雲端連線狀態">
-          <div class="status-dot syncing" id="cloudStatusDot"></div>
-          <span id="cloudStatusText">連線中...</span>
+        <div class="sync-status-indicator" title="Google 試算表雲端同步狀態">
+          <div class="status-dot syncing sync-dot-el"></div>
+          <span class="sync-text-el">連線中...</span>
         </div>
         <button class="btn-action" onclick="saveTodayToHistory(true)">💾 存檔今日出勤</button>
         <button class="btn-action" onclick="openRosterConfig()">編輯學生名單</button>
       </div>
 
+      <!-- 班級黑板專屬工具 -->
       <div class="toolbar-actions" id="blackboardMainActions" style="display: none;">
+        <div class="sync-status-indicator" title="Google 試算表雲端同步狀態">
+          <div class="status-dot syncing sync-dot-el"></div>
+          <span class="sync-text-el">連線中...</span>
+        </div>
+        <button class="btn-action" onclick="quickJumpToHistory()">📜 查看歷史聯絡簿</button>
         <button class="btn-action" onclick="toggleBlackboardFullscreen()">⛶ 全螢幕投影</button>
         <button class="btn-action" onclick="clearBoardText()">清空今日黑板</button>
       </div>
 
+      <!-- 作業訂正專屬工具 -->
       <div class="toolbar-actions" id="correctionMainActions" style="display: none;">
+        <div class="sync-status-indicator" title="Google 試算表雲端同步狀態">
+          <div class="status-dot syncing sync-dot-el"></div>
+          <span class="sync-text-el">連線中...</span>
+        </div>
         <button class="btn-action btn-primary" onclick="openNewTaskModal()">+ 新增訂正項目</button>
       </div>
 
+      <!-- 歷史紀錄工具 (新增「匯入歷史備份」按鈕與隱藏的 file input) -->
       <div class="toolbar-actions" id="historyMainActions" style="display: none;">
+        <input type="file" id="historyFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)" />
+        <button class="btn-action" onclick="triggerImportFileInput()">📥 匯入歷史備份 (.json)</button>
         <button class="btn-action" onclick="exportHistoryData()">匯出歷史備份 (.json)</button>
       </div>
     </header>
@@ -933,10 +1011,11 @@
         <div>
           <div class="card">
             <div class="stats-header-bar">
-              <h3>今日出缺席統計</h3>
-              <div class="stats-total-tag">
-                全班人數 <span class="stats-total-num" id="totalCount">0</span>
+              <div class="stats-header-top">
+                <h3>今日出缺席統計</h3>
+                <div class="stats-total-tag">全班 <span class="stats-total-num" id="totalCount">0</span> 人</div>
               </div>
+              <div class="stats-today-date" id="seatingTodayDateDisplay">載入中...</div>
             </div>
 
             <div class="stats-card-grid">
@@ -975,6 +1054,18 @@
               </div>
               <button class="btn-action" style="width: 100%;" onclick="resetAttendanceToUnknown()">全部重設為未到</button>
             </div>
+
+            <div class="embedded-history-card">
+              <div class="embedded-history-title">
+                <span>📅 歷史出勤速查</span>
+                <button class="btn-action" style="padding: 3px 8px; font-size: 0.8rem;" onclick="quickJumpToHistory()">完整紀錄 ➔</button>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <input type="date" id="quickSeatingDate" style="flex: 1; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem;" />
+                <button class="btn-action" style="padding: 4px 10px; font-size: 0.9rem;" onclick="queryQuickSeatingHistory()">查詢</button>
+              </div>
+              <div id="quickHistoryResult" style="margin-top: 8px; font-size: 0.85rem; color: #475569; line-height: 1.5; min-height: 24px;"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -983,6 +1074,10 @@
     <!-- 視圖二：班級黑板 -->
     <div id="blackboardView" class="view-panel">
       <div class="blackboard-frame" id="blackboardContainer">
+        <button class="exit-fullscreen-btn" onclick="exitBlackboardFullscreen()" title="按 ESC 或點擊此處退出全螢幕">
+          ✕ 退出全螢幕
+        </button>
+
         <div class="blackboard">
           <div class="board-main-layout">
             <!-- 1. 左側 B 區：直式日曆掛牌 -->
@@ -990,8 +1085,8 @@
               <div class="cal-year" id="calYearDisplay">2026 年</div>
               <div class="cal-big-number" id="calMonthDisplay">09</div>
               <div class="cal-divider"></div>
-              <div class="cal-big-number" id="calDayDisplay">06</div>
-              <div class="cal-week" id="calWeekDisplay">星期日</div>
+              <div class="cal-big-number" id="calDayDisplay">08</div>
+              <div class="cal-week" id="calWeekDisplay">星期二</div>
             </div>
 
             <!-- 2. 中間 C 區：作業與測驗 -->
@@ -1047,7 +1142,7 @@
                 ></textarea>
               </div>
 
-              <!-- 科目成績九宮格表格 -->
+              <!-- 科目成績表格 -->
               <div class="subject-scores-card">
                 <table class="score-table">
                   <tr>
@@ -1085,7 +1180,7 @@
           </div>
 
           <div class="board-footer">
-            <span>內容即時本機與雲端自動同步，按右上角「全螢幕」或鍵盤 Esc 隨時切換</span>
+            <span>每日 00:00 自動封存並清空作業與測驗 | 雙向自動即時同步</span>
             <span id="saveNotice">已同步</span>
           </div>
         </div>
@@ -1132,8 +1227,8 @@
           </div>
 
           <div style="margin-top: 20px; font-size: 0.85rem; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 8px;">
-            💡 <strong>查詢說明：</strong><br/>
-            班級歷史日誌各假別已簡化為「學生號碼」快速檢索，支援全學期個人累計分析。
+            💡 <strong>跨日自動保存：</strong><br/>
+            每天到了凌晨 00:00，系統會將當天的出勤紀錄與黑板聯絡簿自動封存至歷史紀錄庫中，並清空以備新一天使用。
           </div>
         </div>
 
@@ -1211,7 +1306,6 @@
   </div>
 
   <script>
-    // 你的專屬 Google Apps Script 雲端網址
     const CLOUD_API_URL = 'https://script.google.com/macros/s/AKfycbwbiquG5UWIG67WC1Aymc7xf7AplIKieeIXt_iy-uxJFPpDrxo1cLU53GH3CWYBlSLq/exec';
 
     const DEFAULT_STUDENTS = Array.from({ length: 28 }, (_, i) => ({
@@ -1243,23 +1337,71 @@
     let correctionTasks = JSON.parse(localStorage.getItem('cm_corrections')) || DEFAULT_CORRECTIONS;
     let lateThreshold = localStorage.getItem('cm_late_threshold') || '07:40';
     let historyLogs = JSON.parse(localStorage.getItem('cm_history_logs')) || {};
+    let lastActiveDate = localStorage.getItem('cm_last_active_date') || getTodayDateStr();
     let currentSelectedStudent = null;
     let syncDebounceTimer = null;
 
-    // 更新狀態燈 UI
-    function setSyncStatus(state, text) {
-      const dot = document.getElementById('cloudStatusDot');
-      const label = document.getElementById('cloudStatusText');
-      if (!dot || !label) return;
-      dot.className = `status-dot ${state}`;
-      label.textContent = text;
+    // 同步更新所有頁籤的狀態指示器
+    function setAllSyncStatus(state, text) {
+      document.querySelectorAll('.sync-dot-el').forEach(el => {
+        el.className = `status-dot ${state} sync-dot-el`;
+      });
+      document.querySelectorAll('.sync-text-el').forEach(el => {
+        el.textContent = text;
+      });
     }
 
-    // ================= 雲端即時同步核心 (雙通道保障) =================
+    // ================= 跨日 00:00 自動封存並清空 =================
+    function checkAndHandleMidnightRollover() {
+      const today = getTodayDateStr();
+      if (lastActiveDate !== today) {
+        saveSpecificDateToHistory(lastActiveDate);
+
+        students.forEach(s => {
+          s.status = 'unknown';
+          s.checkInTime = '';
+        });
+        localStorage.setItem('cm_students', JSON.stringify(students));
+
+        const boardData = JSON.parse(localStorage.getItem('cm_board_data') || '{}');
+        boardData.homeworkItems = ['', '', '', '', '', '', '', ''];
+        boardData.examItems = ['', '', '', '', '', '', '', ''];
+        boardData.notice = '';
+        if (boardData.subjects && Array.isArray(boardData.subjects)) {
+          boardData.subjects.forEach(s => s.score = '0');
+        }
+        localStorage.setItem('cm_board_data', JSON.stringify(boardData));
+
+        lastActiveDate = today;
+        localStorage.setItem('cm_last_active_date', today);
+
+        triggerCloudPush();
+      }
+    }
+
+    function saveSpecificDateToHistory(dateStr) {
+      const boardData = JSON.parse(localStorage.getItem('cm_board_data') || '{}');
+      if (!historyLogs[dateStr]) {
+        historyLogs[dateStr] = {
+          date: dateStr,
+          students: JSON.parse(JSON.stringify(students)),
+          board: {
+            homeworkItems: boardData.homeworkItems || [],
+            examItems: boardData.examItems || [],
+            notice: boardData.notice || '',
+            subjects: boardData.subjects || []
+          },
+          savedAt: '23:59:59 (跨日自動封存)'
+        };
+        localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
+      }
+    }
+
+    // ================= 雲端即時同步核心 =================
     function triggerCloudPush() {
       if (!CLOUD_API_URL) return;
 
-      setSyncStatus('syncing', '同步中...');
+      setAllSyncStatus('syncing', '同步中...');
       clearTimeout(syncDebounceTimer);
 
       syncDebounceTimer = setTimeout(() => {
@@ -1269,25 +1411,24 @@
           boardData: JSON.parse(localStorage.getItem('cm_board_data') || '{}'),
           historyLogs: historyLogs,
           lateThreshold: lateThreshold,
+          lastActiveDate: lastActiveDate,
           updatedAt: new Date().toISOString()
         };
 
         const jsonString = JSON.stringify(payload);
 
-        // 通道 1：使用標準 POST 發送
         fetch(CLOUD_API_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: jsonString
         }).then(() => {
-          setSyncStatus('online', '雲端已同步');
+          setAllSyncStatus('online', '雲端已同步');
         }).catch(() => {
-          // 通道 2 (備用通道)：使用 GET 帶參寫入，絕對避免 CORS 阻擋
           const fallbackUrl = `${CLOUD_API_URL}?data=${encodeURIComponent(jsonString)}`;
           fetch(fallbackUrl, { mode: 'no-cors' })
-            .then(() => setSyncStatus('online', '雲端已同步'))
-            .catch(() => setSyncStatus('error', '同步中斷'));
+            .then(() => setAllSyncStatus('online', '雲端已同步'))
+            .catch(() => setAllSyncStatus('error', '連線異常'));
         });
       }, 600);
     }
@@ -1295,7 +1436,7 @@
     function fetchCloudData() {
       if (!CLOUD_API_URL) return;
 
-      setSyncStatus('syncing', '載入雲端...');
+      setAllSyncStatus('syncing', '載入雲端...');
       fetch(CLOUD_API_URL)
         .then(res => res.json())
         .then(data => {
@@ -1304,28 +1445,31 @@
             correctionTasks = data.correctionTasks || [];
             historyLogs = data.historyLogs || {};
             lateThreshold = data.lateThreshold || '07:40';
+            if (data.lastActiveDate) lastActiveDate = data.lastActiveDate;
 
             localStorage.setItem('cm_students', JSON.stringify(students));
             localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
             localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
             localStorage.setItem('cm_late_threshold', lateThreshold);
+            localStorage.setItem('cm_last_active_date', lastActiveDate);
 
             if (data.boardData) {
               localStorage.setItem('cm_board_data', JSON.stringify(data.boardData));
             }
 
+            checkAndHandleMidnightRollover();
+
             renderGrid();
             loadBoardData();
             document.getElementById('lateThresholdInput').value = lateThreshold;
-            setSyncStatus('online', '雲端已同步');
+            setAllSyncStatus('online', '雲端已同步');
           } else {
-            // 雲端為空，將本機資料推上試算表
             triggerCloudPush();
           }
         })
         .catch(err => {
           console.warn('Offline or fetch error:', err);
-          setSyncStatus('online', '本機離線中');
+          setAllSyncStatus('online', '本機模式');
         });
     }
 
@@ -1364,14 +1508,55 @@
       }
     }
 
-    // ================= 黑板功能 =================
+    function quickJumpToHistory() {
+      switchView('history');
+    }
+
+    function queryQuickSeatingHistory() {
+      const dateStr = document.getElementById('quickSeatingDate').value;
+      const resEl = document.getElementById('quickHistoryResult');
+      if (!dateStr) {
+        resEl.textContent = '請先選擇日期';
+        return;
+      }
+      const log = historyLogs[dateStr];
+      if (!log || !log.students) {
+        resEl.innerHTML = `<span style="color:#94a3b8;">無【${dateStr}】出勤紀錄</span>`;
+        return;
+      }
+      const lateList = log.students.filter(s => s.status === 'late').map(s => `${s.seat}號`);
+      const sickList = log.students.filter(s => s.status === 'sick').map(s => `${s.seat}號`);
+      const unkList = log.students.filter(s => !s.status || s.status === 'unknown').map(s => `${s.seat}號`);
+
+      resEl.innerHTML = `
+        <strong>${dateStr}：</strong><br/>
+        遲到：${lateList.length > 0 ? lateList.join('、') : '無'}<br/>
+        病假：${sickList.length > 0 ? sickList.join('、') : '無'}<br/>
+        缺席：${unkList.length > 0 ? unkList.join('、') : '無'}
+      `;
+    }
+
+    // ================= 黑板全螢幕控制 =================
     function toggleBlackboardFullscreen() {
       const boardElem = document.getElementById('blackboardContainer');
-      if (!document.fullscreenElement) {
-        if (boardElem.requestFullscreen) boardElem.requestFullscreen();
-        else if (boardElem.webkitRequestFullscreen) boardElem.webkitRequestFullscreen();
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (boardElem.requestFullscreen) {
+          boardElem.requestFullscreen();
+        } else if (boardElem.webkitRequestFullscreen) {
+          boardElem.webkitRequestFullscreen();
+        }
       } else {
-        if (document.exitFullscreen) document.exitFullscreen();
+        exitBlackboardFullscreen();
+      }
+    }
+
+    function exitBlackboardFullscreen() {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
       }
     }
 
@@ -1499,6 +1684,10 @@
       document.getElementById('calMonthDisplay').textContent = String(now.getMonth() + 1).padStart(2, '0');
       document.getElementById('calDayDisplay').textContent = String(now.getDate()).padStart(2, '0');
       document.getElementById('calWeekDisplay').textContent = `星期${weekDays[now.getDay()]}`;
+
+      const dateText = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 (星期${weekDays[now.getDay()]})`;
+      document.getElementById('seatingTodayDateDisplay').textContent = dateText;
+      document.getElementById('quickSeatingDate').value = getTodayDateStr();
     }
 
     function clearBoardText() {
@@ -1772,10 +1961,9 @@
       }
     }
 
-    // 編輯學生名單：輸入後立刻雙通道存入本機與雲端
     function openRosterConfig() {
       const currentList = students.map(s => `${s.seat} ${s.name}`).join('\n');
-      const hint = '請輸入學生名單，每行一位。\n格式範例：「座號 姓名」（例如：1 王小明 或 01 王小明）：';
+      const hint = '請輸入學生名單，每行一位。\n支援格式：「座號 姓名」（例如：01 王小明 或 1 王小明）：';
       const raw = prompt(hint, currentList);
 
       if (raw !== null && raw.trim() !== '') {
@@ -1808,21 +1996,18 @@
 
         students.sort((a, b) => a.seat - b.seat);
 
-        // 立刻本機與雲端存檔
         localStorage.setItem('cm_students', JSON.stringify(students));
         renderGrid();
         saveTodayToHistory(false);
         triggerCloudPush();
-
         if (document.getElementById('correctionsView').classList.contains('active')) {
           renderCorrections();
         }
-
-        alert('學生名單已成功同步儲存至 Google 試算表！未來開啟網頁將自動帶入。');
+        alert('學生名單已成功同步至 Google 試算表！');
       }
     }
 
-    // ================= 歷史紀錄功能 =================
+    // ================= 歷史紀錄、備份匯出與匯入核心 =================
     function saveTodayToHistory(showAlert = false) {
       const todayStr = getTodayDateStr();
       const boardData = JSON.parse(localStorage.getItem('cm_board_data') || '{}');
@@ -1906,7 +2091,7 @@
       display.innerHTML = `
         <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:baseline;">
           <h2 style="font-size:1.4rem; color:#1e293b;">📅 ${dateStr} 班級歷史日誌</h2>
-          <span style="font-size:0.85rem; color:#64748b;">自動備份時間：${log.savedAt || '當日'}</span>
+          <span style="font-size:0.85rem; color:#64748b;">封存時間：${log.savedAt || '當日'}</span>
         </div>
 
         <h3 style="font-size:1.1rem; margin-bottom:10px; color:#334155;">1. 出缺席號碼列表 (全班 ${logStudents.length} 人)</h3>
@@ -2056,8 +2241,65 @@
       downloadAnchor.remove();
     }
 
+    // 觸發選擇備份檔
+    function triggerImportFileInput() {
+      document.getElementById('historyFileInput').click();
+    }
+
+    // 處理匯入 JSON 檔案
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          if (typeof importedData === 'object' && importedData !== null) {
+            // 合併既有歷史紀錄與新匯入的歷史紀錄
+            historyLogs = Object.assign({}, historyLogs, importedData);
+            localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
+
+            // 如果最新一筆有學生名單，且目前的學生名單仍是預設的「學生1...」，則一併更新當前名單
+            const dates = Object.keys(importedData).sort().reverse();
+            if (dates.length > 0 && importedData[dates[0]].students) {
+              const sampleName = students[0] ? students[0].name : '';
+              if (sampleName.startsWith('學生') || confirm('是否要同時將備份檔中的最新學生名單套用至當前班級？')) {
+                students = importedData[dates[0]].students.map(s => ({
+                  id: s.id,
+                  seat: s.seat,
+                  name: s.name,
+                  status: s.status || 'unknown',
+                  checkInTime: s.checkInTime || ''
+                }));
+                localStorage.setItem('cm_students', JSON.stringify(students));
+                renderGrid();
+              }
+            }
+
+            // 同步推送至 Google 試算表
+            triggerCloudPush();
+
+            // 重新整理歷史查詢下拉選單與畫面
+            initHistoryView();
+
+            alert(`✅ 成功匯入 ${Object.keys(importedData).length} 天的歷史備份紀錄！已同步至雲端。`);
+          } else {
+            alert('檔案格式錯誤，請選取有效的 JSON 歷史備份檔！');
+          }
+        } catch (err) {
+          alert('解析備份檔案失敗，請確認檔案是否完整！');
+          console.error(err);
+        }
+        // 重設 input 讓同檔名也能再次選取
+        event.target.value = '';
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
     // 初始化載入
     window.addEventListener('DOMContentLoaded', () => {
+      checkAndHandleMidnightRollover();
       loadBoardData();
 
       const savedThreshold = localStorage.getItem('cm_late_threshold');
@@ -2067,9 +2309,9 @@
 
       renderGrid();
       saveTodayToHistory(false);
-
-      // 自動從 Google 試算表載入最新學生名單與資料
       fetchCloudData();
+
+      setInterval(checkAndHandleMidnightRollover, 5 * 60 * 1000);
     });
   </script>
 </body>
