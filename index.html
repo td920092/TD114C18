@@ -94,7 +94,7 @@
       align-items: center;
     }
 
-    /* 雲端同步狀態標籤 */
+    /* 雲端同步狀態標籤通用樣式 */
     .sync-status-indicator {
       display: flex;
       align-items: center;
@@ -697,22 +697,11 @@
       padding-top: 6px;
     }
 
-    /* ================= 作業訂正樣式 ================= */
+    /* ================= 作業訂正樣式 (已移除中間工具列) ================= */
     .correction-container {
       display: flex;
       flex-direction: column;
       gap: 16px;
-    }
-
-    .correction-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--card-bg);
-      padding: 16px 20px;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      border: 1px solid var(--border);
     }
 
     .correction-list {
@@ -877,7 +866,7 @@
       padding-bottom: 4px;
     }
 
-    /* ================= 彈窗樣式 (自訂學生打卡排版) ================= */
+    /* ================= 彈窗樣式 ================= */
     .modal {
       display: none;
       position: fixed;
@@ -897,7 +886,6 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
 
-    /* 打卡專屬面板排版 */
     .checkin-modal-container {
       display: flex;
       flex-direction: column;
@@ -905,7 +893,6 @@
       margin-top: 14px;
     }
 
-    /* 頂部獨立全寬打卡按鈕 */
     .btn-live-checkin {
       width: 100%;
       background: #0284c7;
@@ -934,7 +921,6 @@
       transform: translateY(1px);
     }
 
-    /* 2 欄 3 列 網格 */
     .checkin-grid-2x3 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -965,7 +951,6 @@
       transform: translateY(1px);
     }
 
-    /* 各假別細節配色 (復刻附圖) */
     .btn-present { background: var(--present-bg); color: var(--present-text); }
     .btn-late    { background: var(--late-bg); color: var(--late-text); }
     .btn-sick    { background: var(--sick-bg); color: var(--sick-text); }
@@ -1014,7 +999,7 @@
           <div class="status-dot syncing sync-dot-el"></div>
           <span class="sync-text-el">連線中...</span>
         </div>
-        <button class="btn-action" onclick="saveTodayToHistory(true)">💾 存檔今日出勤</button>
+        <button class="btn-action" onclick="saveAllData(true)">💾 一鍵全存</button>
         <button class="btn-action" onclick="openRosterConfig()">編輯學生名單</button>
       </div>
 
@@ -1029,7 +1014,7 @@
         <button class="btn-action" onclick="clearBoardText()">清空今日黑板</button>
       </div>
 
-      <!-- 作業訂正專屬工具 -->
+      <!-- 作業訂正專屬工具 (在此直接放置「+ 新增訂正項目」與狀態燈) -->
       <div class="toolbar-actions" id="correctionMainActions" style="display: none;">
         <div class="sync-status-indicator" title="Google 試算表雲端同步狀態">
           <div class="status-dot syncing sync-dot-el"></div>
@@ -1101,7 +1086,6 @@
               <button class="btn-action" style="width: 100%;" onclick="resetAttendanceToUnknown()">全部重設為未到</button>
             </div>
 
-            <!-- 內建歷史查詢區塊 -->
             <div class="embedded-history-card">
               <div class="embedded-history-title">
                 <span>📅 歷史出勤速查</span>
@@ -1227,24 +1211,16 @@
           </div>
 
           <div class="board-footer">
-            <span>每日 00:00 自動封存並清空作業與測驗 | 雙向自動即時同步</span>
+            <span>每日 18:00 自動同步全檔 | 00:00 自動封存並清空作業與測驗 | 按右上角「全螢幕」或鍵盤 Esc 隨時切換</span>
             <span id="saveNotice">已同步</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 視圖三：作業訂正追蹤 -->
+    <!-- 視圖三：作業訂正追蹤 (已移除頂部多餘區塊) -->
     <div id="correctionsView" class="view-panel">
       <div class="correction-container">
-        <div class="correction-toolbar">
-          <div>
-            <strong style="font-size: 1.1rem;">作業/考卷訂正追蹤清單</strong>
-            <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 10px;">點擊座號可切換「待訂正 (紅)」與「完成 (灰)」</span>
-          </div>
-          <button class="btn-action btn-primary" onclick="openNewTaskModal()">+ 新增訂正項目</button>
-        </div>
-
         <div class="correction-list" id="correctionList"></div>
       </div>
     </div>
@@ -1274,8 +1250,9 @@
           </div>
 
           <div style="margin-top: 20px; font-size: 0.85rem; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 8px;">
-            💡 <strong>跨日自動保存：</strong><br/>
-            每天到了凌晨 00:00，系統會將當天的出勤紀錄與黑板聯絡簿自動封存至歷史紀錄庫中，並清空以備新一天使用。
+            💡 <strong>自動保存機制：</strong><br/>
+            每天 18:00 系統將強制全自動雲端同步。<br/>
+            每天 00:00 系統會將前日出勤紀錄與聯絡簿封存至歷史紀錄庫，並為新的一天進行清空。
           </div>
         </div>
 
@@ -1310,7 +1287,7 @@
     </div>
   </div>
 
-  <!-- 點名與打卡彈窗 (依附圖重構) -->
+  <!-- 點名與打卡彈窗 -->
   <div class="modal" id="studentModal">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
@@ -1376,6 +1353,7 @@
     let lateThreshold = localStorage.getItem('cm_late_threshold') || '07:40';
     let historyLogs = JSON.parse(localStorage.getItem('cm_history_logs')) || {};
     let lastActiveDate = localStorage.getItem('cm_last_active_date') || getTodayDateStr();
+    let last1800SyncDate = localStorage.getItem('cm_last_1800_sync_date') || '';
     let currentSelectedStudent = null;
     let syncDebounceTimer = null;
 
@@ -1388,7 +1366,33 @@
       });
     }
 
-    // ================= 跨日 00:00 自動封存並清空 =================
+    // ================= 一鍵全存機制 =================
+    function saveAllData(showAlert = false) {
+      localStorage.setItem('cm_students', JSON.stringify(students));
+      localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+      
+      autoSaveBoard();
+
+      if (showAlert) {
+        setTimeout(() => {
+          alert('✅ 已成功將所有資料（每日出缺勤、班級黑板、作業訂正）儲存，並全域同步至雲端！');
+        }, 150);
+      }
+    }
+
+    // ================= 定時排程檢查 (午夜換日、18:00 雲端同步) =================
+    function timeBasedChecks() {
+      checkAndHandleMidnightRollover();
+
+      const now = new Date();
+      const todayStr = getTodayDateStr();
+      if (now.getHours() >= 18 && last1800SyncDate !== todayStr) {
+        saveAllData(false);
+        last1800SyncDate = todayStr;
+        localStorage.setItem('cm_last_1800_sync_date', todayStr);
+      }
+    }
+
     function checkAndHandleMidnightRollover() {
       const today = getTodayDateStr();
       if (lastActiveDate !== today) {
@@ -1665,8 +1669,10 @@
 
       localStorage.setItem('cm_board_data', JSON.stringify(data));
       const notice = document.getElementById('saveNotice');
-      notice.textContent = '自動儲存中...';
-      setTimeout(() => { notice.textContent = '已同步'; }, 500);
+      if (notice) {
+        notice.textContent = '自動儲存中...';
+        setTimeout(() => { notice.textContent = '已同步'; }, 500);
+      }
       saveTodayToHistory(false);
       triggerCloudPush();
     }
@@ -1796,7 +1802,8 @@
       } else {
         task.needFixSeats.push(seatNum);
       }
-      saveCorrections();
+      localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+      triggerCloudPush();
       renderCorrections();
     }
 
@@ -1805,7 +1812,8 @@
       if (!task) return;
 
       task.needFixSeats = isNeedFix ? students.map(s => s.seat) : [];
-      saveCorrections();
+      localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+      triggerCloudPush();
       renderCorrections();
     }
 
@@ -1837,7 +1845,8 @@
       };
 
       correctionTasks.unshift(newTask);
-      saveCorrections();
+      localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+      triggerCloudPush();
       renderCorrections();
       closeNewTaskModal();
     }
@@ -1845,14 +1854,10 @@
     function deleteCorrectionTask(taskId) {
       if (confirm('確定要刪除這筆作業訂正項目嗎？')) {
         correctionTasks = correctionTasks.filter(t => t.id !== taskId);
-        saveCorrections();
+        localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+        triggerCloudPush();
         renderCorrections();
       }
-    }
-
-    function saveCorrections() {
-      localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
-      triggerCloudPush();
     }
 
     // ================= 每日出缺勤功能 =================
@@ -1937,7 +1942,6 @@
       const curText = statusMap[student.status || 'unknown'] + (student.checkInTime ? ` (${student.checkInTime})` : '');
       document.getElementById('modalCurrentStatus').textContent = `目前狀態：${curText}`;
 
-      // 產生 (HH:mm)
       const now = new Date();
       const hh = String(now.getHours()).padStart(2, '0');
       const mm = String(now.getMinutes()).padStart(2, '0');
@@ -2329,7 +2333,7 @@
 
     // 初始化載入
     window.addEventListener('DOMContentLoaded', () => {
-      checkAndHandleMidnightRollover();
+      timeBasedChecks();
       loadBoardData();
 
       const savedThreshold = localStorage.getItem('cm_late_threshold');
@@ -2338,10 +2342,11 @@
       }
 
       renderGrid();
-      saveTodayToHistory(false);
+      saveAllData(false);
+
       fetchCloudData();
 
-      setInterval(checkAndHandleMidnightRollover, 5 * 60 * 1000);
+      setInterval(timeBasedChecks, 60 * 1000);
     });
   </script>
 </body>
