@@ -94,7 +94,7 @@
       align-items: center;
     }
 
-    /* 雲端同步狀態標籤通用樣式 */
+    /* 雲端同步狀態標籤 */
     .sync-status-indicator {
       display: flex;
       align-items: center;
@@ -106,6 +106,12 @@
       font-size: 0.88rem;
       font-weight: 600;
       color: #475569;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .sync-status-indicator:hover {
+      background: #e2e8f0;
     }
 
     .status-dot {
@@ -697,7 +703,7 @@
       padding-top: 6px;
     }
 
-    /* ================= 作業訂正樣式 (已移除中間工具列) ================= */
+    /* ================= 作業訂正樣式 ================= */
     .correction-container {
       display: flex;
       flex-direction: column;
@@ -995,7 +1001,7 @@
 
       <!-- 每日出缺勤專屬工具 -->
       <div class="toolbar-actions" id="seatingMainActions">
-        <div class="sync-status-indicator" title="Google 試算表雲端同步狀態">
+        <div class="sync-status-indicator" onclick="fetchCloudData(true)" title="點擊強制立即重新同步最新雲端資料">
           <div class="status-dot syncing sync-dot-el"></div>
           <span class="sync-text-el">連線中...</span>
         </div>
@@ -1005,7 +1011,7 @@
 
       <!-- 班級黑板專屬工具 -->
       <div class="toolbar-actions" id="blackboardMainActions" style="display: none;">
-        <div class="sync-status-indicator" title="Google 試算表雲端同步狀態">
+        <div class="sync-status-indicator" onclick="fetchCloudData(true)" title="點擊強制立即重新同步最新雲端資料">
           <div class="status-dot syncing sync-dot-el"></div>
           <span class="sync-text-el">連線中...</span>
         </div>
@@ -1014,9 +1020,9 @@
         <button class="btn-action" onclick="clearBoardText()">清空今日黑板</button>
       </div>
 
-      <!-- 作業訂正專屬工具 (在此直接放置「+ 新增訂正項目」與狀態燈) -->
+      <!-- 作業訂正專屬工具 -->
       <div class="toolbar-actions" id="correctionMainActions" style="display: none;">
-        <div class="sync-status-indicator" title="Google 試算表雲端同步狀態">
+        <div class="sync-status-indicator" onclick="fetchCloudData(true)" title="點擊強制立即重新同步最新雲端資料">
           <div class="status-dot syncing sync-dot-el"></div>
           <span class="sync-text-el">連線中...</span>
         </div>
@@ -1211,14 +1217,14 @@
           </div>
 
           <div class="board-footer">
-            <span>每日 18:00 自動同步全檔 | 00:00 自動封存並清空作業與測驗 | 按右上角「全螢幕」或鍵盤 Esc 隨時切換</span>
+            <span>每 30 秒自動向雲端檢測最新資料 | 每日 18:00 自動同步 | 00:00 換日封存</span>
             <span id="saveNotice">已同步</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 視圖三：作業訂正追蹤 (已移除頂部多餘區塊) -->
+    <!-- 視圖三：作業訂正追蹤 -->
     <div id="correctionsView" class="view-panel">
       <div class="correction-container">
         <div class="correction-list" id="correctionList"></div>
@@ -1250,9 +1256,9 @@
           </div>
 
           <div style="margin-top: 20px; font-size: 0.85rem; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 8px;">
-            💡 <strong>自動保存機制：</strong><br/>
-            每天 18:00 系統將強制全自動雲端同步。<br/>
-            每天 00:00 系統會將前日出勤紀錄與聯絡簿封存至歷史紀錄庫，並為新的一天進行清空。
+            💡 <strong>自動同步機制：</strong><br/>
+            白板與辦公室電腦每 30 秒自動對齊資料。<br/>
+            隨時可點擊右上角的「🟢 雲端已同步」立即強制抓取最新進度。
           </div>
         </div>
 
@@ -1296,7 +1302,7 @@
       </div>
       
       <div class="checkin-modal-container">
-        <!-- 頂部大按鈕：⏱ 現在時間打卡(當前時間) -->
+        <!-- 頂部大按鈕 -->
         <button class="btn-live-checkin" onclick="checkInCurrentTime()">
           <span>⏱ 現在時間打卡</span><span id="liveCurrentTime"></span>
         </button>
@@ -1348,14 +1354,17 @@
       }
     ];
 
+    // 全域變數
     let students = JSON.parse(localStorage.getItem('cm_students')) || DEFAULT_STUDENTS;
     let correctionTasks = JSON.parse(localStorage.getItem('cm_corrections')) || DEFAULT_CORRECTIONS;
     let lateThreshold = localStorage.getItem('cm_late_threshold') || '07:40';
     let historyLogs = JSON.parse(localStorage.getItem('cm_history_logs')) || {};
     let lastActiveDate = localStorage.getItem('cm_last_active_date') || getTodayDateStr();
     let last1800SyncDate = localStorage.getItem('cm_last_1800_sync_date') || '';
+    let lastLocalModifiedTime = parseInt(localStorage.getItem('cm_last_modified_time') || '0', 10);
     let currentSelectedStudent = null;
     let syncDebounceTimer = null;
+    let isFetchingCloud = false;
 
     function setAllSyncStatus(state, text) {
       document.querySelectorAll('.sync-dot-el').forEach(el => {
@@ -1368,6 +1377,9 @@
 
     // ================= 一鍵全存機制 =================
     function saveAllData(showAlert = false) {
+      lastLocalModifiedTime = Date.now();
+      localStorage.setItem('cm_last_modified_time', String(lastLocalModifiedTime));
+
       localStorage.setItem('cm_students', JSON.stringify(students));
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
       
@@ -1438,9 +1450,12 @@
       }
     }
 
-    // ================= 雲端即時同步核心 =================
+    // ================= 雲端即時同步核心 (防快取 + 防舊資料覆蓋) =================
     function triggerCloudPush() {
       if (!CLOUD_API_URL) return;
+
+      lastLocalModifiedTime = Date.now();
+      localStorage.setItem('cm_last_modified_time', String(lastLocalModifiedTime));
 
       setAllSyncStatus('syncing', '同步中...');
       clearTimeout(syncDebounceTimer);
@@ -1453,6 +1468,7 @@
           historyLogs: historyLogs,
           lateThreshold: lateThreshold,
           lastActiveDate: lastActiveDate,
+          timestamp: lastLocalModifiedTime,
           updatedAt: new Date().toISOString()
         };
 
@@ -1471,44 +1487,69 @@
             .then(() => setAllSyncStatus('online', '雲端已同步'))
             .catch(() => setAllSyncStatus('error', '連線異常'));
         });
-      }, 600);
+      }, 500);
     }
 
-    function fetchCloudData() {
-      if (!CLOUD_API_URL) return;
+    // 從雲端抓取資料 (加入防快取參數與輪詢)
+    function fetchCloudData(isManual = false) {
+      if (!CLOUD_API_URL || isFetchingCloud) return;
 
-      setAllSyncStatus('syncing', '載入雲端...');
-      fetch(CLOUD_API_URL)
+      isFetchingCloud = true;
+      if (isManual) setAllSyncStatus('syncing', '刷新中...');
+
+      // 加上隨機時間戳記 ?t=... 徹底防止瀏覽器使用暫存舊資料
+      const noCacheUrl = `${CLOUD_API_URL}?t=${Date.now()}`;
+
+      fetch(noCacheUrl, { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
+          isFetchingCloud = false;
           if (data && data.students && Array.isArray(data.students) && data.students.length > 0) {
-            students = data.students;
-            correctionTasks = data.correctionTasks || [];
-            historyLogs = data.historyLogs || {};
-            lateThreshold = data.lateThreshold || '07:40';
-            if (data.lastActiveDate) lastActiveDate = data.lastActiveDate;
+            const cloudTimestamp = data.timestamp || 0;
 
-            localStorage.setItem('cm_students', JSON.stringify(students));
-            localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
-            localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
-            localStorage.setItem('cm_late_threshold', lateThreshold);
-            localStorage.setItem('cm_last_active_date', lastActiveDate);
+            // 只有當雲端資料比本地端「更新」或是手動點擊時，才全面載入更新
+            if (isManual || cloudTimestamp >= lastLocalModifiedTime) {
+              students = data.students;
+              correctionTasks = data.correctionTasks || [];
+              historyLogs = data.historyLogs || {};
+              lateThreshold = data.lateThreshold || '07:40';
+              if (data.lastActiveDate) lastActiveDate = data.lastActiveDate;
+              lastLocalModifiedTime = cloudTimestamp || Date.now();
 
-            if (data.boardData) {
-              localStorage.setItem('cm_board_data', JSON.stringify(data.boardData));
+              localStorage.setItem('cm_students', JSON.stringify(students));
+              localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+              localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
+              localStorage.setItem('cm_late_threshold', lateThreshold);
+              localStorage.setItem('cm_last_active_date', lastActiveDate);
+              localStorage.setItem('cm_last_modified_time', String(lastLocalModifiedTime));
+
+              if (data.boardData) {
+                localStorage.setItem('cm_board_data', JSON.stringify(data.boardData));
+              }
+
+              checkAndHandleMidnightRollover();
+
+              renderGrid();
+              loadBoardData();
+              if (document.getElementById('correctionsView').classList.contains('active')) {
+                renderCorrections();
+              }
+              document.getElementById('lateThresholdInput').value = lateThreshold;
+              setAllSyncStatus('online', '雲端已同步');
+
+              if (isManual) {
+                alert('✅ 雲端最新資料同步完成！');
+              }
+            } else {
+              setAllSyncStatus('online', '雲端已同步');
             }
-
-            checkAndHandleMidnightRollover();
-
-            renderGrid();
-            loadBoardData();
-            document.getElementById('lateThresholdInput').value = lateThreshold;
-            setAllSyncStatus('online', '雲端已同步');
           } else {
+            // 雲端為空，將本機資料推上
             triggerCloudPush();
           }
         })
         .catch(err => {
+          isFetchingCloud = false;
           console.warn('Offline or fetch error:', err);
           setAllSyncStatus('online', '本機模式');
         });
@@ -2342,10 +2383,16 @@
       }
 
       renderGrid();
-      saveAllData(false);
 
-      fetchCloudData();
+      // 初次載入強制向雲端抓取最新資料 (帶 anti-cache)
+      fetchCloudData(false);
 
+      // 1. 每 30 秒自動向雲端輪詢最新資料 (解決白板打卡辦公室沒即時更新的問題)
+      setInterval(() => {
+        fetchCloudData(false);
+      }, 30 * 1000);
+
+      // 2. 每 1 分鐘檢查午夜換日與 18:00 定時同步
       setInterval(timeBasedChecks, 60 * 1000);
     });
   </script>
