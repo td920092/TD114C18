@@ -17,20 +17,36 @@
       --text-muted: #64748b;
       --border: #e2e8f0;
       
-      /* 出勤狀態色彩 */
-      --unknown-bg: #fff1f2;
-      --unknown-border: #f43f5e;
-      --unknown-text: #9f1239;
+      /* 出勤狀態色彩更新 */
       --present-bg: #e0f2fe;
       --present-text: #0369a1;
-      --late-bg: #fef3c7;
-      --late-text: #b45309;
-      --sick-bg: #fee2e2;
-      --sick-text: #b91c1c;
-      --personal-bg: #ffedd5;
-      --personal-text: #c2410c;
+      --present-border: #7dd3fc;
+      --present-cell: #38bdf8;
+
+      --sick-bg: #ffe4e6;
+      --sick-text: #be123c;
+      --sick-border: #fda4af;
+      --sick-cell: #fb7185;
+
+      --personal-bg: #dcfce7;
+      --personal-text: #15803d;
+      --personal-border: #86efac;
+      --personal-cell: #22c55e;
+
+      --unknown-bg: #334155;
+      --unknown-text: #f8fafc;
+      --unknown-border: #1e293b;
+      --unknown-cell: #475569;
+
+      --late-bg: #991b1b;
+      --late-text: #ffffff;
+      --late-border: #7f1d1d;
+      --late-cell: #b91c1c;
+
       --other-bg: #ede9fe;
       --other-text: #6d28d9;
+      --other-border: #c4b5fd;
+      --other-cell: #7c3aed;
     }
 
     * {
@@ -94,29 +110,29 @@
       align-items: center;
     }
 
-    /* 雲端同步狀態標籤 */
     .sync-status-indicator {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      background: #f1f5f9;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: #ffffff;
       border: 1px solid var(--border);
-      font-size: 0.88rem;
+      font-size: 0.95rem;
       font-weight: 600;
-      color: #475569;
+      color: #1e293b;
       cursor: pointer;
       user-select: none;
-      transition: background 0.15s;
+      transition: all 0.15s;
     }
     .sync-status-indicator:hover {
-      background: #e2e8f0;
+      background: #f1f5f9;
+      border-color: #cbd5e1;
     }
 
     .status-dot {
-      width: 9px;
-      height: 9px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: #94a3b8;
     }
@@ -156,7 +172,6 @@
       background: var(--primary-hover);
     }
 
-    /* 視圖切換控制 */
     .view-panel {
       display: none;
     }
@@ -171,16 +186,18 @@
       gap: 16px;
     }
 
-    .podium-indicator {
+    .seating-date-indicator {
       width: 100%;
       text-align: center;
-      padding: 10px;
+      padding: 12px;
       background: #e2e8f0;
-      color: #475569;
-      font-weight: bold;
+      color: #1e293b;
+      font-size: 1.25rem;
+      font-weight: 800;
       border-radius: 8px;
-      letter-spacing: 6px;
+      letter-spacing: 2px;
       margin-bottom: 16px;
+      user-select: none;
     }
 
     .card {
@@ -198,15 +215,15 @@
     }
 
     .desk {
-      min-height: 86px;
+      min-height: 96px;
       border: 1.5px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 10px 6px;
+      border-radius: 9px;
+      padding: 6px 4px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       cursor: pointer;
       background: #fafafa;
       user-select: none;
@@ -219,40 +236,77 @@
     }
 
     .desk.unknown { 
-      background: #fff1f2; 
-      border: 2.5px dashed #f43f5e; 
-      color: #9f1239;
-      box-shadow: 0 2px 5px rgba(244, 63, 94, 0.15);
+      background: var(--unknown-bg); 
+      border: 1.5px solid var(--unknown-border); 
+      color: var(--unknown-text); 
     }
-    .desk.unknown .status-badge {
-      background: #f43f5e;
-      color: #ffffff;
-      font-weight: 700;
-    }
-
-    .desk.present { background: var(--present-bg); border-color: #93c5fd; color: var(--present-text); }
-    .desk.late { background: var(--late-bg); border-color: #fde047; color: var(--late-text); }
-    .desk.sick { background: var(--sick-bg); border-color: #fca5a5; color: var(--sick-text); }
-    .desk.personal { background: var(--personal-bg); border-color: #fdba74; color: var(--personal-text); }
-    .desk.other { background: var(--other-bg); border-color: #c4b5fd; color: var(--other-text); }
+    .desk.present  { background: var(--present-bg); border-color: var(--present-border); color: var(--present-text); }
+    .desk.late     { background: var(--late-bg); border-color: var(--late-border); color: var(--late-text); }
+    .desk.sick     { background: var(--sick-bg); border-color: var(--sick-border); color: var(--sick-text); }
+    .desk.personal { background: var(--personal-bg); border-color: var(--personal-border); color: var(--personal-text); }
+    .desk.other    { background: var(--other-bg); border-color: var(--other-border); color: var(--other-text); }
 
     .desk-name {
       text-align: center;
-      font-size: 1.05rem;
+      font-size: 0.98rem;
       font-weight: 700;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 95%;
+      margin-top: 2px;
     }
 
+    .period-matrix-8 {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: 1fr;
+      gap: 1.5px;
+      width: 100%;
+      height: 18px;
+      background: rgba(0, 0, 0, 0.08);
+      padding: 1.5px;
+      border-radius: 3px;
+    }
+
+    .period-cell {
+      border-radius: 2px;
+      font-size: 0.58rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      line-height: 1;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+
+    .period-cell.p-present  { background: var(--present-cell); }
+    .period-cell.p-late     { background: var(--late-cell); }
+    .period-cell.p-sick     { background: var(--sick-cell); }
+    .period-cell.p-personal { background: var(--personal-cell); }
+    .period-cell.p-other    { background: var(--other-cell); }
+    .period-cell.p-unknown  { background: var(--unknown-cell); color: #f8fafc; }
+
     .status-badge {
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       text-align: center;
-      padding: 2px 8px;
+      padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(255,255,255,0.85);
-      font-weight: 600;
+      background: rgba(255,255,255,0.92);
+      color: #1e293b;
+      font-weight: 700;
+      max-width: 95%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .desk.unknown .status-badge,
+    .desk.late .status-badge {
+      background: rgba(255,255,255,0.95);
+      color: #0f172a;
     }
 
     .stats-header-bar {
@@ -274,17 +328,6 @@
       font-size: 1.15rem;
       color: #1e293b;
       font-weight: 800;
-    }
-
-    .stats-today-date {
-      font-size: 0.95rem;
-      color: #475569;
-      font-weight: 600;
-      background: #f1f5f9;
-      padding: 3px 8px;
-      border-radius: 6px;
-      display: inline-block;
-      width: fit-content;
     }
 
     .stats-total-tag {
@@ -853,7 +896,7 @@
 
     .history-board-preview {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       margin-top: 14px;
     }
@@ -872,7 +915,7 @@
       padding-bottom: 4px;
     }
 
-    /* ================= 彈窗樣式 ================= */
+    /* ================= 彈窗樣式 (完美對齊附圖) ================= */
     .modal {
       display: none;
       position: fixed;
@@ -890,6 +933,8 @@
       width: 92%;
       max-width: 460px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .checkin-modal-container {
@@ -904,40 +949,36 @@
       background: #0284c7;
       color: #ffffff;
       border: none;
-      padding: 14px 16px;
+      padding: 15px 16px;
       border-radius: 10px;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 800;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 8px;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
-      transition: background 0.15s, transform 0.1s;
+      transition: background 0.15s;
     }
 
     .btn-live-checkin:hover {
       background: #0369a1;
-      transform: translateY(-1px);
     }
 
-    .btn-live-checkin:active {
-      transform: translateY(1px);
-    }
-
-    .checkin-grid-2x3 {
+    /* 4+2 網格按鈕 (對照附圖) */
+    .checkin-grid-custom {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
     }
 
     .btn-grid-action {
-      padding: 12px 6px;
+      padding: 12px 4px;
       border-radius: 8px;
       border: 1px solid transparent;
-      font-size: 1.02rem;
+      font-size: 0.95rem;
       font-weight: 700;
       text-align: center;
       cursor: pointer;
@@ -949,20 +990,78 @@
     }
 
     .btn-grid-action:hover {
-      filter: brightness(0.96);
-      transform: translateY(-1px);
+      filter: brightness(0.95);
     }
 
-    .btn-grid-action:active {
-      transform: translateY(1px);
+    .btn-grid-action.top-4 {
+      grid-column: span 1;
     }
 
-    .btn-present { background: var(--present-bg); color: var(--present-text); }
-    .btn-late    { background: var(--late-bg); color: var(--late-text); }
-    .btn-sick    { background: var(--sick-bg); color: var(--sick-text); }
-    .btn-personal{ background: var(--personal-bg); color: var(--personal-text); }
-    .btn-other   { background: var(--other-bg); color: var(--other-text); }
-    .btn-unknown { background: #fff1f2; color: #9f1239; border-color: #fecdd3; }
+    .btn-grid-action.bottom-2 {
+      grid-column: span 2;
+      padding: 13px 10px;
+      font-size: 1.05rem;
+    }
+
+    .btn-present { background: var(--present-bg); color: var(--present-text); border: 1px solid var(--present-border); }
+    .btn-late    { background: var(--late-bg); color: var(--late-text); border: 1px solid var(--late-border); }
+    .btn-sick    { background: var(--sick-bg); color: var(--sick-text); border: 1px solid var(--sick-border); }
+    .btn-personal{ background: var(--personal-bg); color: var(--personal-text); border: 1px solid var(--personal-border); }
+    .btn-other   { background: var(--other-bg); color: var(--other-text); border: 1px solid var(--other-border); }
+    .btn-unknown { background: var(--unknown-bg); color: var(--unknown-text); border: 1px solid var(--unknown-border); }
+
+    .period-leave-box {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .period-leave-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .period-leave-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .period-leave-row select {
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .btn-apply-leave {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+    }
+    .btn-apply-leave:hover {
+      background: #1d4ed8;
+    }
 
     .task-form-group {
       display: flex;
@@ -999,34 +1098,32 @@
         <button class="tab-btn" onclick="switchView('history')">歷史紀錄查詢</button>
       </div>
 
-      <!-- 每日出缺勤專屬工具 -->
+      <!-- 1. 每日出缺勤 -->
       <div class="toolbar-actions" id="seatingMainActions">
-        <div class="sync-status-indicator" onclick="fetchCloudData(true)" title="點擊強制立即重新同步最新雲端資料">
-          <div class="status-dot syncing sync-dot-el"></div>
-          <span class="sync-text-el">連線中...</span>
-        </div>
-        <button class="btn-action" onclick="saveAllData(true)">💾 一鍵全存</button>
         <button class="btn-action" onclick="openRosterConfig()">編輯學生名單</button>
+        <div class="sync-status-indicator" onclick="manualSyncAll()" title="點擊立即儲存並雙向同步雲端最新資料">
+          <div class="status-dot syncing sync-dot-el"></div>
+          <span class="sync-text-el">已同步至雲端</span>
+        </div>
       </div>
 
-      <!-- 班級黑板專屬工具 -->
+      <!-- 2. 班級黑板 -->
       <div class="toolbar-actions" id="blackboardMainActions" style="display: none;">
-        <div class="sync-status-indicator" onclick="fetchCloudData(true)" title="點擊強制立即重新同步最新雲端資料">
-          <div class="status-dot syncing sync-dot-el"></div>
-          <span class="sync-text-el">連線中...</span>
-        </div>
-        <button class="btn-action" onclick="quickJumpToHistory()">📜 查看歷史聯絡簿</button>
         <button class="btn-action" onclick="toggleBlackboardFullscreen()">⛶ 全螢幕投影</button>
         <button class="btn-action" onclick="clearBoardText()">清空今日黑板</button>
+        <div class="sync-status-indicator" onclick="manualSyncAll()" title="點擊立即儲存並雙向同步雲端最新資料">
+          <div class="status-dot syncing sync-dot-el"></div>
+          <span class="sync-text-el">已同步至雲端</span>
+        </div>
       </div>
 
-      <!-- 作業訂正專屬工具 -->
+      <!-- 3. 作業訂正 -->
       <div class="toolbar-actions" id="correctionMainActions" style="display: none;">
-        <div class="sync-status-indicator" onclick="fetchCloudData(true)" title="點擊強制立即重新同步最新雲端資料">
-          <div class="status-dot syncing sync-dot-el"></div>
-          <span class="sync-text-el">連線中...</span>
-        </div>
         <button class="btn-action btn-primary" onclick="openNewTaskModal()">+ 新增訂正項目</button>
+        <div class="sync-status-indicator" onclick="manualSyncAll()" title="點擊立即儲存並雙向同步雲端最新資料">
+          <div class="status-dot syncing sync-dot-el"></div>
+          <span class="sync-text-el">已同步至雲端</span>
+        </div>
       </div>
 
       <!-- 歷史紀錄工具 -->
@@ -1041,7 +1138,7 @@
     <div id="seatingView" class="view-panel active">
       <div class="seat-layout">
         <div class="card">
-          <div class="podium-indicator">講 台 / 黑 板</div>
+          <div class="seating-date-indicator" id="seatingTopDateBanner">載入中...</div>
           <div class="seating-grid" id="seatingGrid"></div>
         </div>
 
@@ -1052,7 +1149,6 @@
                 <h3>今日出缺席統計</h3>
                 <div class="stats-total-tag">全班 <span class="stats-total-num" id="totalCount">0</span> 人</div>
               </div>
-              <div class="stats-today-date" id="seatingTodayDateDisplay">載入中...</div>
             </div>
 
             <div class="stats-card-grid">
@@ -1062,21 +1158,21 @@
               </div>
               <div class="stat-tile">
                 <div class="stat-tile-label">遲到人數</div>
-                <div class="stat-tile-num" id="lateCount" style="color: #b45309;">0</div>
+                <div class="stat-tile-num" id="lateCount" style="color: #991b1b;">0</div>
               </div>
 
               <div class="stat-tile">
                 <div class="stat-tile-label">病假</div>
-                <div class="stat-tile-num" id="sickCount" style="color: #ef4444;">0</div>
+                <div class="stat-tile-num" id="sickCount" style="color: #be123c;">0</div>
               </div>
               <div class="stat-tile">
                 <div class="stat-tile-label">事假</div>
-                <div class="stat-tile-num" id="personalCount" style="color: #c2410c;">0</div>
+                <div class="stat-tile-num" id="personalCount" style="color: #15803d;">0</div>
               </div>
 
               <div class="stat-tile">
                 <div class="stat-tile-label">未到/不明</div>
-                <div class="stat-tile-num" id="unknownCount" style="color: #475569;">0</div>
+                <div class="stat-tile-num" id="unknownCount" style="color: #334155;">0</div>
               </div>
               <div class="stat-tile">
                 <div class="stat-tile-label">其他</div>
@@ -1117,7 +1213,6 @@
 
         <div class="blackboard">
           <div class="board-main-layout">
-            <!-- 1. 左側 B 區：直式日曆掛牌 -->
             <div class="calendar-col">
               <div class="cal-year" id="calYearDisplay">2026 年</div>
               <div class="cal-big-number" id="calMonthDisplay">09</div>
@@ -1126,9 +1221,7 @@
               <div class="cal-week" id="calWeekDisplay">星期二</div>
             </div>
 
-            <!-- 2. 中間 C 區：作業與測驗 -->
             <div class="middle-tasks-col">
-              <!-- 作業 / 繳交 (左欄 1~4，右欄 5~8) -->
               <div class="board-section-card">
                 <div class="section-title work">作業 / 繳交</div>
                 <div class="two-column-list-container">
@@ -1147,7 +1240,6 @@
                 </div>
               </div>
 
-              <!-- 測驗 / 考程 (左欄 1~4，右欄 5~8) -->
               <div class="board-section-card">
                 <div class="section-title exam">測驗 / 考程</div>
                 <div class="two-column-list-container">
@@ -1167,7 +1259,6 @@
               </div>
             </div>
 
-            <!-- 3. 右側 A 區：提醒/攜帶 + 科目成績 -->
             <div class="right-side-col">
               <div class="remind-card">
                 <div class="section-title remind">提醒 / 攜帶</div>
@@ -1179,7 +1270,6 @@
                 ></textarea>
               </div>
 
-              <!-- 科目成績九宮格表格 -->
               <div class="subject-scores-card">
                 <table class="score-table">
                   <tr>
@@ -1217,7 +1307,7 @@
           </div>
 
           <div class="board-footer">
-            <span>每 30 秒自動向雲端檢測最新資料 | 每日 18:00 自動同步 | 00:00 換日封存</span>
+            <span>每 20 秒自動對齊雲端最新狀態 | 每日 18:00 自動同步 | 00:00 換日封存</span>
             <span id="saveNotice">已同步</span>
           </div>
         </div>
@@ -1256,9 +1346,9 @@
           </div>
 
           <div style="margin-top: 20px; font-size: 0.85rem; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 8px;">
-            💡 <strong>自動同步機制：</strong><br/>
-            白板與辦公室電腦每 30 秒自動對齊資料。<br/>
-            隨時可點擊右上角的「🟢 雲端已同步」立即強制抓取最新進度。
+            💡 <strong>雙端自動同步提示：</strong><br/>
+            教室電子白板與辦公室電腦每 20 秒自動比對更新。<br/>
+            若想立即查看教室白板剛打卡的最新情況，可直接點擊右上角的「☁️ 已同步至雲端」立即刷新！
           </div>
         </div>
 
@@ -1293,30 +1383,121 @@
     </div>
   </div>
 
-  <!-- 點名與打卡彈窗 -->
+  <!-- 編輯現有作業訂正彈窗 -->
+  <div class="modal" id="editTaskModal">
+    <div class="modal-content">
+      <h3 style="font-size: 1.2rem; margin-bottom: 6px;">編輯作業訂正項目</h3>
+      <input type="hidden" id="editTaskIdInput" />
+      
+      <div class="task-form-group">
+        <label for="editTaskDateInput">指派 / 記錄日期：</label>
+        <input type="date" id="editTaskDateInput" />
+      </div>
+
+      <div class="task-form-group">
+        <label for="editTaskTitleInput">作業或測驗名稱：</label>
+        <input type="text" id="editTaskTitleInput" />
+      </div>
+
+      <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-action" onclick="closeEditTaskModal()">取消</button>
+        <button class="btn-action btn-primary" onclick="confirmEditTask()">儲存修改</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 點名與打卡彈窗 (完美復刻附圖排版) -->
   <div class="modal" id="studentModal">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
         <h3 id="modalStudentName" style="font-size: 1.3rem; color: #0f172a;">學生姓名</h3>
-        <span id="modalCurrentStatus" style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600;">目前：未到</span>
+        <span id="modalCurrentStatus" style="font-size: 0.88rem; color: var(--text-muted); font-weight: 600;">目前：未到 / 不明</span>
       </div>
       
       <div class="checkin-modal-container">
-        <!-- 頂部大按鈕 -->
-        <button class="btn-live-checkin" onclick="checkInCurrentTime()">
-          <span>⏱ 現在時間打卡</span><span id="liveCurrentTime"></span>
-        </button>
+        <!-- 視圖 A：未打卡（初始狀態）- 完美對照附圖排版 -->
+        <div id="modalFirstCheckinView" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- 頂部大藍色打卡橫幅 -->
+          <button class="btn-live-checkin" onclick="checkInCurrentTime()">
+            <span>⏱ 現在時間打卡</span><span id="liveCurrentTime"></span>
+          </button>
 
-        <!-- 2 欄 3 列 網格 -->
-        <div class="checkin-grid-2x3">
-          <button class="btn-grid-action btn-present" onclick="updateStatus('present')">手動設為：出席 (準時)</button>
-          <button class="btn-grid-action btn-late" onclick="updateStatus('late')">手動設為：遲到</button>
-          
-          <button class="btn-grid-action btn-sick" onclick="updateStatus('sick')">病假</button>
-          <button class="btn-grid-action btn-personal" onclick="updateStatus('personal')">事假</button>
-          
-          <button class="btn-grid-action btn-other" onclick="updateStatus('other')">其他 (公假/喪假等)</button>
-          <button class="btn-grid-action btn-unknown" onclick="updateStatus('unknown')">重設為：未到 / 不明</button>
+          <!-- 4+2 網格按鈕 (對照附圖) -->
+          <div class="checkin-grid-custom">
+            <!-- 上排 4 個：病假、事假、其他假、設為未到 -->
+            <button class="btn-grid-action btn-sick top-4" onclick="updateStatus('sick')">病假</button>
+            <button class="btn-grid-action btn-personal top-4" onclick="updateStatus('personal')">事假</button>
+            <button class="btn-grid-action btn-other top-4" onclick="updateStatus('other')">其他假</button>
+            <button class="btn-grid-action btn-unknown top-4" onclick="updateStatus('unknown')">設為未到</button>
+
+            <!-- 下排 2 個：手動 出席、手動 遲到 -->
+            <button class="btn-grid-action btn-present bottom-2" onclick="updateStatus('present')">手動 出席</button>
+            <button class="btn-grid-action btn-late bottom-2" onclick="updateStatus('late')">手動 遲到</button>
+          </div>
+        </div>
+
+        <!-- 視圖 B：已打卡過（重複點擊），顯示「變更節次出缺勤」與全天更改 -->
+        <div id="modalSubsequentCheckinView" style="display: none; flex-direction: column; gap: 10px;">
+          <div class="period-leave-box">
+            <div class="period-leave-title">
+              <span>✏️ 變更節次出缺勤 (一天8節)</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">自由設定中途請假/到校</span>
+            </div>
+
+            <div class="period-leave-row">
+              <div>
+                <span>從：</span>
+                <select id="leaveStartPeriod">
+                  <option value="1">第 1 節</option>
+                  <option value="2">第 2 節</option>
+                  <option value="3">第 3 節</option>
+                  <option value="4" selected>第 4 節</option>
+                  <option value="5">第 5 節</option>
+                  <option value="6">第 6 節</option>
+                  <option value="7">第 7 節</option>
+                  <option value="8">第 8 節</option>
+                </select>
+              </div>
+
+              <div>
+                <span>至：</span>
+                <select id="leaveEndPeriod">
+                  <option value="1">第 1 節</option>
+                  <option value="2">第 2 節</option>
+                  <option value="3">第 3 節</option>
+                  <option value="4">第 4 節</option>
+                  <option value="5">第 5 節</option>
+                  <option value="6">第 6 節</option>
+                  <option value="7">第 7 節</option>
+                  <option value="8" selected>第 8 節</option>
+                </select>
+              </div>
+
+              <div>
+                <span>變更為：</span>
+                <select id="leavePeriodType">
+                  <option value="sick" selected>病假</option>
+                  <option value="personal">事假</option>
+                  <option value="other">其他假</option>
+                  <option value="present">出席</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn-apply-leave" onclick="applyPeriodLeave()">確定變更節次</button>
+          </div>
+
+          <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+            <div style="font-size: 0.85rem; font-weight: bold; color: #64748b; margin-bottom: 6px;">或者變更全天狀態：</div>
+            <div class="checkin-grid-custom">
+              <button class="btn-grid-action btn-sick top-4" style="padding: 6px;" onclick="updateStatus('sick')">病假</button>
+              <button class="btn-grid-action btn-personal top-4" style="padding: 6px;" onclick="updateStatus('personal')">事假</button>
+              <button class="btn-grid-action btn-other top-4" style="padding: 6px;" onclick="updateStatus('other')">其他假</button>
+              <button class="btn-grid-action btn-unknown top-4" style="padding: 6px;" onclick="updateStatus('unknown')">未到</button>
+              <button class="btn-grid-action btn-present bottom-2" style="padding: 8px;" onclick="updateStatus('present')">手動 出席</button>
+              <button class="btn-grid-action btn-late bottom-2" style="padding: 8px;" onclick="updateStatus('late')">手動 遲到</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1329,12 +1510,15 @@
   <script>
     const CLOUD_API_URL = 'https://script.google.com/macros/s/AKfycbwbiquG5UWIG67WC1Aymc7xf7AplIKieeIXt_iy-uxJFPpDrxo1cLU53GH3CWYBlSLq/exec';
 
+    const createDefaultPeriods = (defaultStatus = 'unknown') => Array(8).fill(defaultStatus);
+
     const DEFAULT_STUDENTS = Array.from({ length: 28 }, (_, i) => ({
       id: i + 1,
       seat: i + 1,
       name: `學生${i + 1}`,
       status: 'unknown',
-      checkInTime: ''
+      checkInTime: '',
+      periods: createDefaultPeriods('unknown')
     }));
 
     const getTodayDateStr = () => {
@@ -1354,7 +1538,6 @@
       }
     ];
 
-    // 全域變數
     let students = JSON.parse(localStorage.getItem('cm_students')) || DEFAULT_STUDENTS;
     let correctionTasks = JSON.parse(localStorage.getItem('cm_corrections')) || DEFAULT_CORRECTIONS;
     let lateThreshold = localStorage.getItem('cm_late_threshold') || '07:40';
@@ -1366,6 +1549,20 @@
     let syncDebounceTimer = null;
     let isFetchingCloud = false;
 
+    function ensureStudentsPeriods() {
+      students.forEach(s => {
+        if (!s.periods || !Array.isArray(s.periods) || s.periods.length !== 8) {
+          s.periods = createDefaultPeriods(s.status || 'unknown');
+        }
+      });
+    }
+
+    function hasPeriodVariation(student) {
+      if (!student.periods || !Array.isArray(student.periods) || student.periods.length !== 8) return false;
+      const first = student.periods[0];
+      return student.periods.some(p => p !== first);
+    }
+
     function setAllSyncStatus(state, text) {
       document.querySelectorAll('.sync-dot-el').forEach(el => {
         el.className = `status-dot ${state} sync-dot-el`;
@@ -1375,7 +1572,11 @@
       });
     }
 
-    // ================= 一鍵全存機制 =================
+    function manualSyncAll() {
+      saveAllData(false);
+      fetchCloudData(true);
+    }
+
     function saveAllData(showAlert = false) {
       lastLocalModifiedTime = Date.now();
       localStorage.setItem('cm_last_modified_time', String(lastLocalModifiedTime));
@@ -1387,12 +1588,11 @@
 
       if (showAlert) {
         setTimeout(() => {
-          alert('✅ 已成功將所有資料（每日出缺勤、班級黑板、作業訂正）儲存，並全域同步至雲端！');
+          alert('✅ 已成功將所有資料（每日出缺勤、班級黑板、作業訂正）同步至雲端！');
         }, 150);
       }
     }
 
-    // ================= 定時排程檢查 (午夜換日、18:00 雲端同步) =================
     function timeBasedChecks() {
       checkAndHandleMidnightRollover();
 
@@ -1413,6 +1613,7 @@
         students.forEach(s => {
           s.status = 'unknown';
           s.checkInTime = '';
+          s.periods = createDefaultPeriods('unknown');
         });
         localStorage.setItem('cm_students', JSON.stringify(students));
 
@@ -1450,7 +1651,6 @@
       }
     }
 
-    // ================= 雲端即時同步核心 (防快取 + 防舊資料覆蓋) =================
     function triggerCloudPush() {
       if (!CLOUD_API_URL) return;
 
@@ -1480,24 +1680,22 @@
           headers: { 'Content-Type': 'application/json' },
           body: jsonString
         }).then(() => {
-          setAllSyncStatus('online', '雲端已同步');
+          setAllSyncStatus('online', '已同步至雲端');
         }).catch(() => {
           const fallbackUrl = `${CLOUD_API_URL}?data=${encodeURIComponent(jsonString)}`;
           fetch(fallbackUrl, { mode: 'no-cors' })
-            .then(() => setAllSyncStatus('online', '雲端已同步'))
+            .then(() => setAllSyncStatus('online', '已同步至雲端'))
             .catch(() => setAllSyncStatus('error', '連線異常'));
         });
       }, 500);
     }
 
-    // 從雲端抓取資料 (加入防快取參數與輪詢)
     function fetchCloudData(isManual = false) {
       if (!CLOUD_API_URL || isFetchingCloud) return;
 
       isFetchingCloud = true;
       if (isManual) setAllSyncStatus('syncing', '刷新中...');
 
-      // 加上隨機時間戳記 ?t=... 徹底防止瀏覽器使用暫存舊資料
       const noCacheUrl = `${CLOUD_API_URL}?t=${Date.now()}`;
 
       fetch(noCacheUrl, { cache: 'no-store' })
@@ -1507,9 +1705,10 @@
           if (data && data.students && Array.isArray(data.students) && data.students.length > 0) {
             const cloudTimestamp = data.timestamp || 0;
 
-            // 只有當雲端資料比本地端「更新」或是手動點擊時，才全面載入更新
             if (isManual || cloudTimestamp >= lastLocalModifiedTime) {
               students = data.students;
+              ensureStudentsPeriods();
+
               correctionTasks = data.correctionTasks || [];
               historyLogs = data.historyLogs || {};
               lateThreshold = data.lateThreshold || '07:40';
@@ -1535,16 +1734,15 @@
                 renderCorrections();
               }
               document.getElementById('lateThresholdInput').value = lateThreshold;
-              setAllSyncStatus('online', '雲端已同步');
+              setAllSyncStatus('online', '已同步至雲端');
 
               if (isManual) {
                 alert('✅ 雲端最新資料同步完成！');
               }
             } else {
-              setAllSyncStatus('online', '雲端已同步');
+              setAllSyncStatus('online', '已同步至雲端');
             }
           } else {
-            // 雲端為空，將本機資料推上
             triggerCloudPush();
           }
         })
@@ -1555,10 +1753,7 @@
         });
     }
 
-    // 視圖切換
     function switchView(viewName) {
-      saveTodayToHistory(false);
-
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
       
@@ -1618,7 +1813,6 @@
       `;
     }
 
-    // ================= 黑板全螢幕控制 =================
     function toggleBlackboardFullscreen() {
       const boardElem = document.getElementById('blackboardContainer');
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -1769,8 +1963,11 @@
       document.getElementById('calDayDisplay').textContent = String(now.getDate()).padStart(2, '0');
       document.getElementById('calWeekDisplay').textContent = `星期${weekDays[now.getDay()]}`;
 
-      const dateText = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 (星期${weekDays[now.getDay()]})`;
-      document.getElementById('seatingTodayDateDisplay').textContent = dateText;
+      const fullDateStr = `${now.getFullYear()} 年 ${String(now.getMonth() + 1).padStart(2, '0')} 月 ${String(now.getDate()).padStart(2, '0')} 日 (星期${weekDays[now.getDay()]})`;
+      const bannerEl = document.getElementById('seatingTopDateBanner');
+      if (bannerEl) {
+        bannerEl.textContent = fullDateStr;
+      }
       document.getElementById('quickSeatingDate').value = getTodayDateStr();
     }
 
@@ -1820,6 +2017,7 @@
               <span class="${badgeClass}">${badgeText}</span>
             </div>
             <div class="task-actions">
+              <button class="btn-action" onclick="openEditTaskModal('${task.id}')">✏️ 編輯</button>
               <button class="btn-action" onclick="markAllTask('${task.id}', true)">全選待訂正</button>
               <button class="btn-action" onclick="markAllTask('${task.id}', false)">全數完成</button>
               <button class="btn-action" style="color: #ef4444;" onclick="deleteCorrectionTask('${task.id}')">刪除</button>
@@ -1838,11 +2036,17 @@
       if (!task) return;
 
       const idx = task.needFixSeats.indexOf(seatNum);
+      const studentObj = students.find(s => s.seat === seatNum);
+      const stuName = studentObj ? `${studentObj.seat} 號 ${studentObj.name}` : `${seatNum} 號`;
+
       if (idx > -1) {
+        const ok = confirm(`確定要將【${stuName}】的作業「${task.title}」標記為【訂正完成】嗎？`);
+        if (!ok) return;
         task.needFixSeats.splice(idx, 1);
       } else {
         task.needFixSeats.push(seatNum);
       }
+
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
       triggerCloudPush();
       renderCorrections();
@@ -1851,6 +2055,11 @@
     function markAllTask(taskId, isNeedFix) {
       const task = correctionTasks.find(t => t.id === taskId);
       if (!task) return;
+
+      if (!isNeedFix) {
+        const ok = confirm(`確定要將作業「${task.title}」全班標記為【全數訂正完成】嗎？`);
+        if (!ok) return;
+      }
 
       task.needFixSeats = isNeedFix ? students.map(s => s.seat) : [];
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
@@ -1892,6 +2101,43 @@
       closeNewTaskModal();
     }
 
+    function openEditTaskModal(taskId) {
+      const task = correctionTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('editTaskIdInput').value = task.id;
+      document.getElementById('editTaskDateInput').value = task.date || getTodayDateStr();
+      document.getElementById('editTaskTitleInput').value = task.title || '';
+      document.getElementById('editTaskModal').style.display = 'flex';
+      document.getElementById('editTaskTitleInput').focus();
+    }
+
+    function closeEditTaskModal() {
+      document.getElementById('editTaskModal').style.display = 'none';
+    }
+
+    function confirmEditTask() {
+      const taskId = document.getElementById('editTaskIdInput').value;
+      const newTitle = document.getElementById('editTaskTitleInput').value.trim();
+      const newDate = document.getElementById('editTaskDateInput').value;
+
+      if (!newTitle) {
+        alert('作業名稱不能為空！');
+        return;
+      }
+
+      const task = correctionTasks.find(t => t.id === taskId);
+      if (task) {
+        task.title = newTitle;
+        task.date = newDate || getTodayDateStr();
+        localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
+        triggerCloudPush();
+        renderCorrections();
+      }
+
+      closeEditTaskModal();
+    }
+
     function deleteCorrectionTask(taskId) {
       if (confirm('確定要刪除這筆作業訂正項目嗎？')) {
         correctionTasks = correctionTasks.filter(t => t.id !== taskId);
@@ -1901,7 +2147,7 @@
       }
     }
 
-    // ================= 每日出缺勤功能 =================
+    // ================= 每日出缺勤功能 (完美對齊附圖與 1 排 8 列) =================
     function saveLateThreshold() {
       const val = document.getElementById('lateThresholdInput').value;
       if (val) {
@@ -1912,6 +2158,7 @@
     }
 
     function renderGrid() {
+      ensureStudentsPeriods();
       const grid = document.getElementById('seatingGrid');
       grid.innerHTML = '';
 
@@ -1940,9 +2187,20 @@
           displayName = `${student.seat} 號 ${displayName}`;
         }
 
+        const isMultiStatus = hasPeriodVariation(student);
+
+        let bottomHtml = '';
+        if (isMultiStatus) {
+          const periodCellsHtml = student.periods.map((pStatus, idx) => {
+            return `<div class="period-cell p-${pStatus}" title="第 ${idx + 1} 節：${statusLabelMap[pStatus] || '未到'}">${idx + 1}</div>`;
+          }).join('');
+          bottomHtml = `<div class="period-matrix-8">${periodCellsHtml}</div>`;
+        }
+
         desk.innerHTML = `
           <div class="desk-name">${displayName}</div>
           <div class="status-badge">${labelText}</div>
+          ${bottomHtml}
         `;
         grid.appendChild(desk);
       });
@@ -1970,23 +2228,29 @@
 
     function openStudentModal(student) {
       currentSelectedStudent = student;
+      ensureStudentsPeriods();
+
       document.getElementById('modalStudentName').textContent = `${student.seat} 號 ${student.name}`;
       
-      const statusMap = {
-        unknown: '未到 / 不明',
-        present: '出席 (準時)',
-        late: '遲到',
-        sick: '病假',
-        personal: '事假',
-        other: '其他'
-      };
-      const curText = statusMap[student.status || 'unknown'] + (student.checkInTime ? ` (${student.checkInTime})` : '');
+      const curText = getStatusDesc(student);
       document.getElementById('modalCurrentStatus').textContent = `目前狀態：${curText}`;
 
       const now = new Date();
       const hh = String(now.getHours()).padStart(2, '0');
       const mm = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('liveCurrentTime').textContent = `(${hh}:${mm})`;
+
+      const isAlreadyRecorded = student.status && student.status !== 'unknown';
+      const firstView = document.getElementById('modalFirstCheckinView');
+      const subsequentView = document.getElementById('modalSubsequentCheckinView');
+
+      if (isAlreadyRecorded) {
+        firstView.style.display = 'none';
+        subsequentView.style.display = 'flex';
+      } else {
+        firstView.style.display = 'flex';
+        subsequentView.style.display = 'none';
+      }
 
       document.getElementById('studentModal').style.display = 'flex';
     }
@@ -1996,8 +2260,35 @@
       currentSelectedStudent = null;
     }
 
+    function getStatusDesc(student) {
+      const statusMap = {
+        unknown: '未到 / 不明',
+        present: '出席',
+        late: '遲到',
+        sick: '病假',
+        personal: '事假',
+        other: '其他'
+      };
+      let str = statusMap[student.status] || '未到';
+      if (student.checkInTime) str += ` ${student.checkInTime}`;
+      if (hasPeriodVariation(student)) str += ' (分節請假)';
+      return str;
+    }
+
+    function confirmIfAlreadyCheckedIn(student) {
+      if (!student.status || student.status === 'unknown') {
+        return true;
+      }
+      const curDesc = getStatusDesc(student);
+      return confirm(`⚠️ 防誤觸提醒：\n【${student.seat} 號 ${student.name}】今日已有紀錄（目前為：${curDesc}）。\n\n確定要更改全天出勤紀錄嗎？`);
+    }
+
     function checkInCurrentTime() {
       if (!currentSelectedStudent) return;
+
+      if (!confirmIfAlreadyCheckedIn(currentSelectedStudent)) {
+        return;
+      }
 
       const now = new Date();
       const hh = String(now.getHours()).padStart(2, '0');
@@ -2006,9 +2297,11 @@
 
       const threshold = document.getElementById('lateThresholdInput').value || '07:40';
       const isLate = currentTimeStr > threshold;
+      const finalStatus = isLate ? 'late' : 'present';
 
-      currentSelectedStudent.status = isLate ? 'late' : 'present';
+      currentSelectedStudent.status = finalStatus;
       currentSelectedStudent.checkInTime = currentTimeStr;
+      currentSelectedStudent.periods = createDefaultPeriods(finalStatus);
 
       localStorage.setItem('cm_students', JSON.stringify(students));
       renderGrid();
@@ -2018,17 +2311,60 @@
     }
 
     function updateStatus(status) {
-      if (currentSelectedStudent) {
-        currentSelectedStudent.status = status;
-        if (status !== 'present' && status !== 'late') {
-          currentSelectedStudent.checkInTime = '';
-        }
-        localStorage.setItem('cm_students', JSON.stringify(students));
-        renderGrid();
-        closeModal();
-        saveTodayToHistory(false);
-        triggerCloudPush();
+      if (!currentSelectedStudent) return;
+
+      if (!confirmIfAlreadyCheckedIn(currentSelectedStudent)) {
+        return;
       }
+
+      currentSelectedStudent.status = status;
+      if (status !== 'present' && status !== 'late') {
+        currentSelectedStudent.checkInTime = '';
+      }
+      currentSelectedStudent.periods = createDefaultPeriods(status);
+
+      localStorage.setItem('cm_students', JSON.stringify(students));
+      renderGrid();
+      closeModal();
+      saveTodayToHistory(false);
+      triggerCloudPush();
+    }
+
+    function applyPeriodLeave() {
+      if (!currentSelectedStudent) return;
+
+      const start = parseInt(document.getElementById('leaveStartPeriod').value, 10);
+      const end = parseInt(document.getElementById('leaveEndPeriod').value, 10);
+      const leaveType = document.getElementById('leavePeriodType').value;
+
+      if (start > end) {
+        alert('起始節次不能大於結束節次！');
+        return;
+      }
+
+      const statusMap = {
+        sick: '病假',
+        personal: '事假',
+        other: '其他假',
+        present: '出席'
+      };
+
+      const confirmMsg = `確定要將【${currentSelectedStudent.seat} 號 ${currentSelectedStudent.name}】第 ${start} 節至第 ${end} 節變更為【${statusMap[leaveType]}】嗎？`;
+      if (!confirm(confirmMsg)) return;
+
+      for (let p = start - 1; p < end; p++) {
+        currentSelectedStudent.periods[p] = leaveType;
+      }
+
+      if (currentSelectedStudent.status === 'unknown') {
+        currentSelectedStudent.status = leaveType;
+      }
+
+      localStorage.setItem('cm_students', JSON.stringify(students));
+      renderGrid();
+      closeModal();
+      saveTodayToHistory(false);
+      triggerCloudPush();
     }
 
     function resetAttendanceToUnknown() {
@@ -2036,6 +2372,7 @@
         students.forEach(s => {
           s.status = 'unknown';
           s.checkInTime = '';
+          s.periods = createDefaultPeriods('unknown');
         });
         localStorage.setItem('cm_students', JSON.stringify(students));
         renderGrid();
@@ -2073,7 +2410,8 @@
             seat: seat,
             name: name,
             status: 'unknown',
-            checkInTime: ''
+            checkInTime: '',
+            periods: createDefaultPeriods('unknown')
           };
         });
 
@@ -2108,7 +2446,6 @@
       };
 
       localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
-      triggerCloudPush();
       if (showAlert) {
         alert(`已成功儲存【${todayStr}】的班級出勤與黑板紀錄至歷史庫！`);
       }
@@ -2171,6 +2508,20 @@
         return valid.length > 0 ? valid.join('\n') : '無紀錄';
       };
 
+      const formatSubjectScores = subjects => {
+        if (!subjects || !Array.isArray(subjects) || subjects.length === 0) return '無紀錄';
+        const valid = subjects.map(s => {
+          const scoreNum = parseInt(s.score, 10) || 0;
+          const name = (s.name || '').trim();
+          if (scoreNum > 0 && name && name !== '輸入') {
+            return `${name} ${scoreNum}`;
+          }
+          return null;
+        }).filter(Boolean);
+
+        return valid.length > 0 ? valid.join('\n') : '無紀錄';
+      };
+
       display.innerHTML = `
         <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:baseline;">
           <h2 style="font-size:1.4rem; color:#1e293b;">📅 ${dateStr} 班級歷史日誌</h2>
@@ -2184,20 +2535,20 @@
             <td style="color:#0369a1;">${formatSeatsOnly(presentList)}</td>
           </tr>
           <tr>
-            <th style="color:#b45309;">遲到 (${lateList.length} 人)</th>
-            <td style="color:#b45309; font-weight:700;">${formatSeatsOnly(lateList)}</td>
+            <th style="color:#991b1b;">遲到 (${lateList.length} 人)</th>
+            <td style="color:#991b1b; font-weight:700;">${formatSeatsOnly(lateList)}</td>
           </tr>
           <tr>
-            <th style="color:#b91c1c;">病假 (${sickList.length} 人)</th>
-            <td style="color:#b91c1c;">${formatSeatsOnly(sickList)}</td>
+            <th style="color:#be123c;">病假 (${sickList.length} 人)</th>
+            <td style="color:#be123c;">${formatSeatsOnly(sickList)}</td>
           </tr>
           <tr>
-            <th style="color:#c2410c;">事假 (${personalList.length} 人)</th>
-            <td style="color:#c2410c;">${formatSeatsOnly(personalList)}</td>
+            <th style="color:#15803d;">事假 (${personalList.length} 人)</th>
+            <td style="color:#15803d;">${formatSeatsOnly(personalList)}</td>
           </tr>
           <tr>
-            <th style="color:#9f1239;">未到 / 不明 (${unknownList.length} 人)</th>
-            <td style="color:#9f1239; font-weight:bold;">${formatSeatsOnly(unknownList)}</td>
+            <th style="color:#334155;">未到 / 不明 (${unknownList.length} 人)</th>
+            <td style="color:#334155; font-weight:bold;">${formatSeatsOnly(unknownList)}</td>
           </tr>
           <tr>
             <th style="color:#6d28d9;">其他假別 (${otherList.length} 人)</th>
@@ -2218,6 +2569,10 @@
           <div class="history-board-col">
             <h4 style="color:#16a34a;">提醒 / 叮嚀</h4>
             <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${log.board.notice || '無紀錄'}</div>
+          </div>
+          <div class="history-board-col">
+            <h4 style="color:#b45309;">科目次數</h4>
+            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${formatSubjectScores(log.board.subjects)}</div>
           </div>
         </div>
       `;
@@ -2257,11 +2612,11 @@
 
             const statusLabelMap = {
               present: '<span style="color:#0369a1; font-weight:600;">出席</span>',
-              late: `<span style="color:#b45309; font-weight:bold;">遲到 (${sRecord.checkInTime || '紀錄'})</span>`,
-              sick: '<span style="color:#b91c1c; font-weight:bold;">病假</span>',
-              personal: '<span style="color:#c2410c; font-weight:bold;">事假</span>',
+              late: `<span style="color:#991b1b; font-weight:bold;">遲到 (${sRecord.checkInTime || '紀錄'})</span>`,
+              sick: '<span style="color:#be123c; font-weight:bold;">病假</span>',
+              personal: '<span style="color:#15803d; font-weight:bold;">事假</span>',
               other: '<span style="color:#6d28d9;">其他</span>',
-              unknown: '<span style="color:#9f1239; font-weight:bold;">未到</span>'
+              unknown: '<span style="color:#334155; font-weight:bold;">未到</span>'
             };
 
             logRows.push(`
@@ -2283,19 +2638,19 @@
         <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:20px;">
           <div class="stat-tile">
             <div class="stat-tile-label">累計遲到</div>
-            <div class="stat-tile-num" style="color:#b45309;">${lateCount} 次</div>
+            <div class="stat-tile-num" style="color:#991b1b;">${lateCount} 次</div>
           </div>
           <div class="stat-tile">
             <div class="stat-tile-label">病假</div>
-            <div class="stat-tile-num" style="color:#b91c1c;">${sickCount} 天</div>
+            <div class="stat-tile-num" style="color:#be123c;">${sickCount} 天</div>
           </div>
           <div class="stat-tile">
             <div class="stat-tile-label">事假</div>
-            <div class="stat-tile-num" style="color:#c2410c;">${personalCount} 天</div>
+            <div class="stat-tile-num" style="color:#15803d;">${personalCount} 天</div>
           </div>
           <div class="stat-tile">
             <div class="stat-tile-label">未到/缺席</div>
-            <div class="stat-tile-num" style="color:#9f1239;">${unknownCount} 天</div>
+            <div class="stat-tile-num" style="color:#334155;">${unknownCount} 天</div>
           </div>
         </div>
 
@@ -2349,7 +2704,8 @@
                   seat: s.seat,
                   name: s.name,
                   status: s.status || 'unknown',
-                  checkInTime: s.checkInTime || ''
+                  checkInTime: s.checkInTime || '',
+                  periods: s.periods || createDefaultPeriods(s.status || 'unknown')
                 }));
                 localStorage.setItem('cm_students', JSON.stringify(students));
                 renderGrid();
@@ -2383,16 +2739,12 @@
       }
 
       renderGrid();
-
-      // 初次載入強制向雲端抓取最新資料 (帶 anti-cache)
       fetchCloudData(false);
 
-      // 1. 每 30 秒自動向雲端輪詢最新資料 (解決白板打卡辦公室沒即時更新的問題)
       setInterval(() => {
         fetchCloudData(false);
-      }, 30 * 1000);
+      }, 20 * 1000);
 
-      // 2. 每 1 分鐘檢查午夜換日與 18:00 定時同步
       setInterval(timeBasedChecks, 60 * 1000);
     });
   </script>
