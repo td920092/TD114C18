@@ -1341,7 +1341,7 @@
           <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;" />
 
           <div class="history-panel-section">
-            <h3 style="font-size: 1.15rem; color: #1e293b; border-left: 4px solid #10b981; padding-left: 8px; margin-bottom: 12px;">👤 依學生個人查詢</h3>
+            <h3 style="font-size: 1.15rem; color: #1e293b; border-left: 4px solid #10b981; padding-left: 8px; margin-bottom: 12px;">👤 依學生個人查詢 (個人履歷)</h3>
             <div class="task-form-group">
               <label for="historyStudentSelect">選擇學生姓名：</label>
               <select id="historyStudentSelect" onchange="queryHistoryByStudent()">
@@ -1350,16 +1350,36 @@
             </div>
           </div>
 
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;" />
+
+          <!-- 新增：每週區間統計按鈕與選單區塊 -->
+          <div class="history-panel-section">
+            <h3 style="font-size: 1.15rem; color: #1e293b; border-left: 4px solid #f59e0b; padding-left: 8px; margin-bottom: 12px;">📊 個人每週區間統計</h3>
+            <div class="task-form-group">
+              <label for="weeklyStudentSelect">選擇學生姓名：</label>
+              <select id="weeklyStudentSelect">
+                <option value="">-- 請選擇學生 --</option>
+              </select>
+            </div>
+            <div class="task-form-group" style="margin-top: 8px;">
+              <label for="weeklyRangeSelect">選擇週次區間：</label>
+              <select id="weeklyRangeSelect">
+                <option value="">-- 請先選擇學生 --</option>
+              </select>
+            </div>
+            <button class="btn-action btn-primary" style="width: 100%; margin-top: 10px;" onclick="queryWeeklyStudentReport()">📈 產生每週出勤與欠交作業報告</button>
+          </div>
+
           <div style="margin-top: 20px; font-size: 0.85rem; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 12px; border-radius: 8px;">
             💡 <strong>Firebase 即時同步提示：</strong><br/>
             教室電子白板與辦公室電腦隨時自動連線同步。<br/>
-            點擊右上角的「🟢 已即時連線」可手動強制刷新！
+            點擊右上角的樞紐即可隨時重新整理！
           </div>
         </div>
 
         <div class="history-result-box" id="historyResultDisplay">
           <div style="text-align: center; color: #94a3b8; padding: 60px 0;">
-            👈 請由左側選擇「日期」或「學生」進行歷史紀錄查詢
+            👈 請由左側選擇「日期」、「個人履歷」或「每週區間統計」進行查詢
           </div>
         </div>
       </div>
@@ -1411,7 +1431,7 @@
     </div>
   </div>
 
-  <!-- 點名與打卡彈窗 (完美復刻附圖排版) -->
+  <!-- 點名與打卡彈窗 -->
   <div class="modal" id="studentModal">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
@@ -1420,28 +1440,21 @@
       </div>
       
       <div class="checkin-modal-container">
-        <!-- 視圖 A：未打卡（初始狀態）- 完美對照附圖排版 -->
         <div id="modalFirstCheckinView" style="display: flex; flex-direction: column; gap: 10px;">
-          <!-- 頂部大藍色打卡橫幅 -->
           <button class="btn-live-checkin" onclick="checkInCurrentTime()">
             <span>⏱ 現在時間打卡</span><span id="liveCurrentTime"></span>
           </button>
 
-          <!-- 4+2 網格按鈕 (對照附圖) -->
           <div class="checkin-grid-custom">
-            <!-- 上排 4 個：病假、事假、其他假、設為未到 -->
             <button class="btn-grid-action btn-sick top-4" onclick="updateStatus('sick')">病假</button>
             <button class="btn-grid-action btn-personal top-4" onclick="updateStatus('personal')">事假</button>
             <button class="btn-grid-action btn-other top-4" onclick="updateStatus('other')">其他假</button>
             <button class="btn-grid-action btn-unknown top-4" onclick="updateStatus('unknown')">設為未到</button>
-
-            <!-- 下排 2 個：手動 出席、手動 遲到 -->
             <button class="btn-grid-action btn-present bottom-2" onclick="updateStatus('present')">手動 出席</button>
             <button class="btn-grid-action btn-late bottom-2" onclick="updateStatus('late')">手動 遲到</button>
           </div>
         </div>
 
-        <!-- 視圖 B：已打卡過（重複點擊），顯示「變更節次出缺勤」與全天更改 -->
         <div id="modalSubsequentCheckinView" style="display: none; flex-direction: column; gap: 10px;">
           <div class="period-leave-box">
             <div class="period-leave-title">
@@ -1513,7 +1526,7 @@
   </div>
 
   <script>
-    // 1. 初始化 Firebase 設定 (使用您專案 class-manager-18 的金鑰)
+    // 1. 初始化 Firebase 設定
     const firebaseConfig = {
       apiKey: "AIzaSyDfw_xb_mdf6PZ-BKWKgmiXIHUn8rgcAug",
       authDomain: "class-manager-18.firebaseapp.com",
@@ -1525,7 +1538,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const docRef = db.collection('classes').doc('room_818'); // 818班專屬即時資料庫文件
+    const docRef = db.collection('classes').doc('room_818');
 
     const createDefaultPeriods = (defaultStatus = 'unknown') => Array(8).fill(defaultStatus);
 
@@ -1600,19 +1613,15 @@
 
       localStorage.setItem('cm_students', JSON.stringify(students));
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
-      
       autoSaveBoard();
 
       if (showAlert) {
-        setTimeout(() => {
-          alert('✅ 已成功將所有資料同步至雲端！');
-        }, 150);
+        setTimeout(() => { alert('✅ 已成功將所有資料同步至雲端！'); }, 150);
       }
     }
 
     function timeBasedChecks() {
       checkAndHandleMidnightRollover();
-
       const now = new Date();
       const todayStr = getTodayDateStr();
       if (now.getHours() >= 18 && last1800SyncDate !== todayStr) {
@@ -1645,7 +1654,6 @@
 
         lastActiveDate = today;
         localStorage.setItem('cm_last_active_date', today);
-
         triggerCloudPush();
       }
     }
@@ -1668,7 +1676,6 @@
       }
     }
 
-    // 2. 改用 Firebase 即時寫入 (取代原本的 GAS fetch)
     function triggerCloudPush() {
       lastLocalModifiedTime = Date.now();
       localStorage.setItem('cm_last_modified_time', String(lastLocalModifiedTime));
@@ -1689,9 +1696,7 @@
         };
 
         docRef.set(payload)
-          .then(() => {
-            setAllSyncStatus('online', '已即時連線');
-          })
+          .then(() => { setAllSyncStatus('online', '已即時連線'); })
           .catch((error) => {
             console.error("Firebase write error:", error);
             setAllSyncStatus('error', '同步失敗');
@@ -1699,7 +1704,6 @@
       }, 300);
     }
 
-    // 3. 啟動 Firebase 即時監聽 (取代原本的 20 秒輪詢)
     function initFirebaseListener() {
       setAllSyncStatus('syncing', '連線中...');
 
@@ -1738,7 +1742,6 @@
             setAllSyncStatus('online', '已即時連線');
           }
         } else {
-          // 如果雲端是空的，主動推一份預設資料上去
           triggerCloudPush();
         }
       }, (error) => {
@@ -1779,17 +1782,12 @@
       }
     }
 
-    function quickJumpToHistory() {
-      switchView('history');
-    }
+    function quickJumpToHistory() { switchView('history'); }
 
     function queryQuickSeatingHistory() {
       const dateStr = document.getElementById('quickSeatingDate').value;
       const resEl = document.getElementById('quickHistoryResult');
-      if (!dateStr) {
-        resEl.textContent = '請先選擇日期';
-        return;
-      }
+      if (!dateStr) { resEl.textContent = '請先選擇日期'; return; }
       const log = historyLogs[dateStr];
       if (!log || !log.students) {
         resEl.innerHTML = `<span style="color:#94a3b8;">無【${dateStr}】出勤紀錄</span>`;
@@ -1810,23 +1808,15 @@
     function toggleBlackboardFullscreen() {
       const boardElem = document.getElementById('blackboardContainer');
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        if (boardElem.requestFullscreen) {
-          boardElem.requestFullscreen();
-        } else if (boardElem.webkitRequestFullscreen) {
-          boardElem.webkitRequestFullscreen();
-        }
-      } else {
-        exitBlackboardFullscreen();
-      }
+        if (boardElem.requestFullscreen) boardElem.requestFullscreen();
+        else if (boardElem.webkitRequestFullscreen) boardElem.webkitRequestFullscreen();
+      } else { exitBlackboardFullscreen(); }
     }
 
     function exitBlackboardFullscreen() {
       if (document.fullscreenElement || document.webkitFullscreenElement) {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        }
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       }
     }
 
@@ -1852,17 +1842,10 @@
     function cycleScore(idx) {
       const cell = document.getElementById(`sub_score_${idx}`);
       if (!cell) return;
-
       let val = parseInt(cell.textContent.trim(), 10) || 0;
       val = (val + 1) % 6;
       cell.textContent = val;
-
-      if (val === 0) {
-        cell.className = 'score-cell zero';
-      } else {
-        cell.className = 'score-cell active';
-      }
-
+      cell.className = val === 0 ? 'score-cell zero' : 'score-cell active';
       autoSaveBoard();
     }
 
@@ -1872,13 +1855,11 @@
         const inp = document.getElementById(`hw_item_${i}`);
         hwItems.push(inp ? inp.value : '');
       }
-
       const examItems = [];
       for (let i = 1; i <= 8; i++) {
         const inp = document.getElementById(`exam_item_${i}`);
         examItems.push(inp ? inp.value : '');
       }
-
       const subjectData = [];
       for (let i = 0; i < 10; i++) {
         const nameInput = document.getElementById(`sub_name_${i}`);
@@ -1888,14 +1869,12 @@
           score: scoreCell ? scoreCell.textContent.trim() : '0'
         });
       }
-
       const data = {
         homeworkItems: hwItems,
         examItems: examItems,
         notice: document.getElementById('boardNotice').value,
         subjects: subjectData
       };
-
       localStorage.setItem('cm_board_data', JSON.stringify(data));
       const notice = document.getElementById('saveNotice');
       if (notice) {
@@ -1911,24 +1890,20 @@
       if (saved) {
         try {
           const data = JSON.parse(saved);
-
-          if (data.homeworkItems && Array.isArray(data.homeworkItems)) {
+          if (data.homeworkItems) {
             data.homeworkItems.forEach((text, idx) => {
               const inp = document.getElementById(`hw_item_${idx + 1}`);
               if (inp) inp.value = text;
             });
           }
-
-          if (data.examItems && Array.isArray(data.examItems)) {
+          if (data.examItems) {
             data.examItems.forEach((text, idx) => {
               const inp = document.getElementById(`exam_item_${idx + 1}`);
               if (inp) inp.value = text;
             });
           }
-
           document.getElementById('boardNotice').value = data.notice || '';
-
-          if (data.subjects && Array.isArray(data.subjects)) {
+          if (data.subjects) {
             data.subjects.forEach((sub, idx) => {
               const nameInput = document.getElementById(`sub_name_${idx}`);
               const scoreCell = document.getElementById(`sub_score_${idx}`);
@@ -1944,12 +1919,10 @@
           }
         } catch (e) {}
       }
-
       for (let i = 0; i < 10; i++) {
         const nameInput = document.getElementById(`sub_name_${i}`);
         if (nameInput) updateSubjectInputStyle(nameInput);
       }
-
       const now = new Date();
       const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
       document.getElementById('calYearDisplay').textContent = `${now.getFullYear()} 年`;
@@ -1959,9 +1932,7 @@
 
       const fullDateStr = `${now.getFullYear()} 年 ${String(now.getMonth() + 1).padStart(2, '0')} 月 ${String(now.getDate()).padStart(2, '0')} 日 (星期${weekDays[now.getDay()]})`;
       const bannerEl = document.getElementById('seatingTopDateBanner');
-      if (bannerEl) {
-        bannerEl.textContent = fullDateStr;
-      }
+      if (bannerEl) bannerEl.textContent = fullDateStr;
       document.getElementById('quickSeatingDate').value = getTodayDateStr();
     }
 
@@ -1982,16 +1953,13 @@
     function renderCorrections() {
       const list = document.getElementById('correctionList');
       list.innerHTML = '';
-
       if (correctionTasks.length === 0) {
-        list.innerHTML = `<div style="text-align:center; padding: 40px; color:#94a3b8; background:#fff; border-radius:12px;">目前沒有訂正項目，點擊右上角「+ 新增訂正項目」開始建立！</div>`;
+        list.innerHTML = `<div style="text-align:center; padding: 40px; color:#94a3b8; background:#fff; border-radius:12px;">目前沒有訂正項目！</div>`;
         return;
       }
-
       correctionTasks.forEach(task => {
         const card = document.createElement('div');
         card.className = 'task-card';
-
         const needCount = task.needFixSeats.length;
         const badgeClass = needCount === 0 ? 'task-badge all-clear' : 'task-badge';
         const badgeText = needCount === 0 ? '全數訂正完成 🎉' : `尚有 ${needCount} 人待訂正`;
@@ -2017,9 +1985,7 @@
               <button class="btn-action" style="color: #ef4444;" onclick="deleteCorrectionTask('${task.id}')">刪除</button>
             </div>
           </div>
-          <div class="seat-chip-grid">
-            ${chipsHtml}
-          </div>
+          <div class="seat-chip-grid">${chipsHtml}</div>
         `;
         list.appendChild(card);
       });
@@ -2028,19 +1994,16 @@
     function toggleSeatCorrection(taskId, seatNum) {
       const task = correctionTasks.find(t => t.id === taskId);
       if (!task) return;
-
       const idx = task.needFixSeats.indexOf(seatNum);
       const studentObj = students.find(s => s.seat === seatNum);
       const stuName = studentObj ? `${studentObj.seat} 號 ${studentObj.name}` : `${seatNum} 號`;
 
       if (idx > -1) {
-        const ok = confirm(`確定要將【${stuName}】的作業「${task.title}」標記為【訂正完成】嗎？`);
-        if (!ok) return;
+        if (!confirm(`確定要將【${stuName}】的作業「${task.title}」標記為【訂正完成】嗎？`)) return;
         task.needFixSeats.splice(idx, 1);
       } else {
         task.needFixSeats.push(seatNum);
       }
-
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
       triggerCloudPush();
       renderCorrections();
@@ -2049,12 +2012,7 @@
     function markAllTask(taskId, isNeedFix) {
       const task = correctionTasks.find(t => t.id === taskId);
       if (!task) return;
-
-      if (!isNeedFix) {
-        const ok = confirm(`確定要將作業「${task.title}」全班標記為【全數訂正完成】嗎？`);
-        if (!ok) return;
-      }
-
+      if (!isNeedFix && !confirm(`確定要將作業「${task.title}」全班標記為【全數訂正完成】嗎？`)) return;
       task.needFixSeats = isNeedFix ? students.map(s => s.seat) : [];
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
       triggerCloudPush();
@@ -2067,59 +2025,31 @@
       document.getElementById('newTaskModal').style.display = 'flex';
       document.getElementById('taskTitleInput').focus();
     }
-
-    function closeNewTaskModal() {
-      document.getElementById('newTaskModal').style.display = 'none';
-    }
-
+    function closeNewTaskModal() { document.getElementById('newTaskModal').style.display = 'none'; }
     function confirmAddTask() {
       const title = document.getElementById('taskTitleInput').value.trim();
       const date = document.getElementById('taskDateInput').value;
-
-      if (!title) {
-        alert('請輸入作業或測驗名稱！');
-        return;
-      }
-
-      const newTask = {
-        id: 'c_' + Date.now(),
-        title: title,
-        date: date || getTodayDateStr(),
-        needFixSeats: []
-      };
-
-      correctionTasks.unshift(newTask);
+      if (!title) { alert('請輸入作業或測驗名稱！'); return; }
+      correctionTasks.unshift({ id: 'c_' + Date.now(), title, date: date || getTodayDateStr(), needFixSeats: [] });
       localStorage.setItem('cm_corrections', JSON.stringify(correctionTasks));
       triggerCloudPush();
       renderCorrections();
       closeNewTaskModal();
     }
-
     function openEditTaskModal(taskId) {
       const task = correctionTasks.find(t => t.id === taskId);
       if (!task) return;
-
       document.getElementById('editTaskIdInput').value = task.id;
       document.getElementById('editTaskDateInput').value = task.date || getTodayDateStr();
       document.getElementById('editTaskTitleInput').value = task.title || '';
       document.getElementById('editTaskModal').style.display = 'flex';
-      document.getElementById('editTaskTitleInput').focus();
     }
-
-    function closeEditTaskModal() {
-      document.getElementById('editTaskModal').style.display = 'none';
-    }
-
+    function closeEditTaskModal() { document.getElementById('editTaskModal').style.display = 'none'; }
     function confirmEditTask() {
       const taskId = document.getElementById('editTaskIdInput').value;
       const newTitle = document.getElementById('editTaskTitleInput').value.trim();
       const newDate = document.getElementById('editTaskDateInput').value;
-
-      if (!newTitle) {
-        alert('作業名稱不能為空！');
-        return;
-      }
-
+      if (!newTitle) { alert('作業名稱不能為空！'); return; }
       const task = correctionTasks.find(t => t.id === taskId);
       if (task) {
         task.title = newTitle;
@@ -2128,10 +2058,8 @@
         triggerCloudPush();
         renderCorrections();
       }
-
       closeEditTaskModal();
     }
-
     function deleteCorrectionTask(taskId) {
       if (confirm('確定要刪除這筆作業訂正項目嗎？')) {
         correctionTasks = correctionTasks.filter(t => t.id !== taskId);
@@ -2141,526 +2069,323 @@
       }
     }
 
-    // ================= 每日出缺勤功能 =================
+    // ================= 出缺勤網格 =================
     function saveLateThreshold() {
       const val = document.getElementById('lateThresholdInput').value;
-      if (val) {
-        lateThreshold = val;
-        localStorage.setItem('cm_late_threshold', val);
-        triggerCloudPush();
-      }
+      if (val) { lateThreshold = val; localStorage.setItem('cm_late_threshold', val); triggerCloudPush(); }
     }
 
     function renderGrid() {
       ensureStudentsPeriods();
       const grid = document.getElementById('seatingGrid');
       grid.innerHTML = '';
-
       students.forEach(student => {
         const desk = document.createElement('div');
         const st = student.status || 'unknown';
         desk.className = `desk ${st}`;
         desk.onclick = () => openStudentModal(student);
 
-        const statusLabelMap = {
-          unknown: '未到',
-          present: '出席',
-          late: '遲到',
-          sick: '病假',
-          personal: '事假',
-          other: '其他'
-        };
-
+        const statusLabelMap = { unknown: '未到', present: '出席', late: '遲到', sick: '病假', personal: '事假', other: '其他' };
         let labelText = statusLabelMap[st] || '未到';
-        if (student.checkInTime && (st === 'present' || st === 'late')) {
-          labelText += ` (${student.checkInTime})`;
-        }
+        if (student.checkInTime && (st === 'present' || st === 'late')) labelText += ` (${student.checkInTime})`;
 
         let displayName = student.name || '';
-        if (!displayName.includes(String(student.seat))) {
-          displayName = `${student.seat} 號 ${displayName}`;
-        }
+        if (!displayName.includes(String(student.seat))) displayName = `${student.seat} 號 ${displayName}`;
 
         const isMultiStatus = hasPeriodVariation(student);
-
         let bottomHtml = '';
         if (isMultiStatus) {
-          const periodCellsHtml = student.periods.map((pStatus, idx) => {
-            return `<div class="period-cell p-${pStatus}" title="第 ${idx + 1} 節：${statusLabelMap[pStatus] || '未到'}">${idx + 1}</div>`;
-          }).join('');
+          const periodCellsHtml = student.periods.map((pStatus, idx) => `<div class="period-cell p-${pStatus}" title="第 ${idx + 1} 節">${idx + 1}</div>`).join('');
           bottomHtml = `<div class="period-matrix-8">${periodCellsHtml}</div>`;
         }
 
-        desk.innerHTML = `
-          <div class="desk-name">${displayName}</div>
-          <div class="status-badge">${labelText}</div>
-          ${bottomHtml}
-        `;
+        desk.innerHTML = `<div class="desk-name">${displayName}</div><div class="status-badge">${labelText}</div>${bottomHtml}`;
         grid.appendChild(desk);
       });
-
       updateStats();
     }
 
     function updateStats() {
-      const total = students.length;
-      const present = students.filter(s => s.status === 'present').length;
-      const late = students.filter(s => s.status === 'late').length;
-      const sick = students.filter(s => s.status === 'sick').length;
-      const personal = students.filter(s => s.status === 'personal').length;
-      const unknown = students.filter(s => !s.status || s.status === 'unknown').length;
-      const other = students.filter(s => s.status === 'other').length;
-
-      document.getElementById('totalCount').textContent = total;
-      document.getElementById('presentCount').textContent = present;
-      document.getElementById('lateCount').textContent = late;
-      document.getElementById('sickCount').textContent = sick;
-      document.getElementById('personalCount').textContent = personal;
-      document.getElementById('unknownCount').textContent = unknown;
-      document.getElementById('otherCount').textContent = other;
+      document.getElementById('totalCount').textContent = students.length;
+      document.getElementById('presentCount').textContent = students.filter(s => s.status === 'present').length;
+      document.getElementById('lateCount').textContent = students.filter(s => s.status === 'late').length;
+      document.getElementById('sickCount').textContent = students.filter(s => s.status === 'sick').length;
+      document.getElementById('personalCount').textContent = students.filter(s => s.status === 'personal').length;
+      document.getElementById('unknownCount').textContent = students.filter(s => !s.status || s.status === 'unknown').length;
+      document.getElementById('otherCount').textContent = students.filter(s => s.status === 'other').length;
     }
 
     function openStudentModal(student) {
       currentSelectedStudent = student;
       ensureStudentsPeriods();
-
       document.getElementById('modalStudentName').textContent = `${student.seat} 號 ${student.name}`;
-      
-      const curText = getStatusDesc(student);
-      document.getElementById('modalCurrentStatus').textContent = `目前狀態：${curText}`;
-
+      document.getElementById('modalCurrentStatus').textContent = `目前狀態：${getStatusDesc(student)}`;
       const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('liveCurrentTime').textContent = `(${hh}:${mm})`;
+      document.getElementById('liveCurrentTime').textContent = `(${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')})`;
 
       const isAlreadyRecorded = student.status && student.status !== 'unknown';
-      const firstView = document.getElementById('modalFirstCheckinView');
-      const subsequentView = document.getElementById('modalSubsequentCheckinView');
-
-      if (isAlreadyRecorded) {
-        firstView.style.display = 'none';
-        subsequentView.style.display = 'flex';
-      } else {
-        firstView.style.display = 'flex';
-        subsequentView.style.display = 'none';
-      }
-
+      document.getElementById('modalFirstCheckinView').style.display = isAlreadyRecorded ? 'none' : 'flex';
+      document.getElementById('modalSubsequentCheckinView').style.display = isAlreadyRecorded ? 'flex' : 'none';
       document.getElementById('studentModal').style.display = 'flex';
     }
 
-    function closeModal() {
-      document.getElementById('studentModal').style.display = 'none';
-      currentSelectedStudent = null;
-    }
+    function closeModal() { document.getElementById('studentModal').style.display = 'none'; currentSelectedStudent = null; }
 
     function getStatusDesc(student) {
-      const statusMap = {
-        unknown: '未到 / 不明',
-        present: '出席',
-        late: '遲到',
-        sick: '病假',
-        personal: '事假',
-        other: '其他'
-      };
+      const statusMap = { unknown: '未到 / 不明', present: '出席', late: '遲到', sick: '病假', personal: '事假', other: '其他' };
       let str = statusMap[student.status] || '未到';
       if (student.checkInTime) str += ` ${student.checkInTime}`;
       if (hasPeriodVariation(student)) str += ' (分節請假)';
       return str;
     }
 
-    function confirmIfAlreadyCheckedIn(student) {
-      if (!student.status || student.status === 'unknown') {
-        return true;
-      }
-      const curDesc = getStatusDesc(student);
-      return confirm(`⚠️ 防誤觸提醒：\n【${student.seat} 號 ${student.name}】今日已有紀錄（目前為：${curDesc}）。\n\n確定要更改全天出勤紀錄嗎？`);
-    }
-
     function checkInCurrentTime() {
       if (!currentSelectedStudent) return;
-
-      if (!confirmIfAlreadyCheckedIn(currentSelectedStudent)) {
-        return;
-      }
-
       const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      const currentTimeStr = `${hh}:${mm}`;
-
-      const threshold = document.getElementById('lateThresholdInput').value || '07:40';
-      const isLate = currentTimeStr > threshold;
-      const finalStatus = isLate ? 'late' : 'present';
-
+      const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const finalStatus = currentTimeStr > (document.getElementById('lateThresholdInput').value || '07:40') ? 'late' : 'present';
       currentSelectedStudent.status = finalStatus;
       currentSelectedStudent.checkInTime = currentTimeStr;
       currentSelectedStudent.periods = createDefaultPeriods(finalStatus);
-
       localStorage.setItem('cm_students', JSON.stringify(students));
-      renderGrid();
-      closeModal();
-      saveTodayToHistory(false);
-      triggerCloudPush();
+      renderGrid(); closeModal(); saveTodayToHistory(false); triggerCloudPush();
     }
 
     function updateStatus(status) {
       if (!currentSelectedStudent) return;
-
-      if (!confirmIfAlreadyCheckedIn(currentSelectedStudent)) {
-        return;
-      }
-
       currentSelectedStudent.status = status;
-      if (status !== 'present' && status !== 'late') {
-        currentSelectedStudent.checkInTime = '';
-      }
+      if (status !== 'present' && status !== 'late') currentSelectedStudent.checkInTime = '';
       currentSelectedStudent.periods = createDefaultPeriods(status);
-
       localStorage.setItem('cm_students', JSON.stringify(students));
-      renderGrid();
-      closeModal();
-      saveTodayToHistory(false);
-      triggerCloudPush();
+      renderGrid(); closeModal(); saveTodayToHistory(false); triggerCloudPush();
     }
 
     function applyPeriodLeave() {
       if (!currentSelectedStudent) return;
-
       const start = parseInt(document.getElementById('leaveStartPeriod').value, 10);
       const end = parseInt(document.getElementById('leaveEndPeriod').value, 10);
       const leaveType = document.getElementById('leavePeriodType').value;
-
-      if (start > end) {
-        alert('起始節次不能大於結束節次！');
-        return;
-      }
-
-      const statusMap = {
-        sick: '病假',
-        personal: '事假',
-        other: '其他假',
-        present: '出席'
-      };
-
-      const confirmMsg = `確定要將【${currentSelectedStudent.seat} 號 ${currentSelectedStudent.name}】第 ${start} 節至第 ${end} 節變更為【${statusMap[leaveType]}】嗎？`;
-      if (!confirm(confirmMsg)) return;
-
-      for (let p = start - 1; p < end; p++) {
-        currentSelectedStudent.periods[p] = leaveType;
-      }
-
-      if (currentSelectedStudent.status === 'unknown') {
-        currentSelectedStudent.status = leaveType;
-      }
-
+      if (start > end) { alert('起始節次不能大於結束節次！'); return; }
+      for (let p = start - 1; p < end; p++) currentSelectedStudent.periods[p] = leaveType;
+      if (currentSelectedStudent.status === 'unknown') currentSelectedStudent.status = leaveType;
       localStorage.setItem('cm_students', JSON.stringify(students));
-      renderGrid();
-      closeModal();
-      saveTodayToHistory(false);
-      triggerCloudPush();
+      renderGrid(); closeModal(); saveTodayToHistory(false); triggerCloudPush();
     }
 
     function resetAttendanceToUnknown() {
       if (confirm('確定要將全班今日出勤重設為「未到 / 不明」嗎？')) {
-        students.forEach(s => {
-          s.status = 'unknown';
-          s.checkInTime = '';
-          s.periods = createDefaultPeriods('unknown');
-        });
+        students.forEach(s => { s.status = 'unknown'; s.checkInTime = ''; s.periods = createDefaultPeriods('unknown'); });
         localStorage.setItem('cm_students', JSON.stringify(students));
-        renderGrid();
-        saveTodayToHistory(false);
-        triggerCloudPush();
+        renderGrid(); saveTodayToHistory(false); triggerCloudPush();
       }
     }
 
     function openRosterConfig() {
       const currentList = students.map(s => `${s.seat} ${s.name}`).join('\n');
-      const hint = '請輸入學生名單，每行一位。\n支援格式：「座號 姓名」（例如：01 王小明 或 1 王小明）：';
-      const raw = prompt(hint, currentList);
-
+      const raw = prompt('請輸入學生名單，每行一位（格式：「座號 姓名」）：', currentList);
       if (raw !== null && raw.trim() !== '') {
         const lines = raw.trim().split('\n').map(l => l.trim()).filter(Boolean);
-        
         students = lines.map((line, idx) => {
           const parts = line.split(/\s+/);
-          let seat = idx + 1;
-          let name = line;
-
-          if (parts.length >= 2 && /^\d+$/.test(parts[0])) {
-            seat = parseInt(parts[0], 10);
-            name = parts.slice(1).join(' ');
-          } else {
-            const match = line.match(/^(\d+)[.\s、]*(.*)$/);
-            if (match && match[1] && match[2]) {
-              seat = parseInt(match[1], 10);
-              name = match[2].trim();
-            }
-          }
-
-          return {
-            id: seat,
-            seat: seat,
-            name: name,
-            status: 'unknown',
-            checkInTime: '',
-            periods: createDefaultPeriods('unknown')
-          };
+          let seat = idx + 1, name = line;
+          if (parts.length >= 2 && /^\d+$/.test(parts[0])) { seat = parseInt(parts[0], 10); name = parts.slice(1).join(' '); }
+          return { id: seat, seat, name, status: 'unknown', checkInTime: '', periods: createDefaultPeriods('unknown') };
         });
-
         students.sort((a, b) => a.seat - b.seat);
-
         localStorage.setItem('cm_students', JSON.stringify(students));
-        renderGrid();
-        saveTodayToHistory(false);
-        triggerCloudPush();
-        if (document.getElementById('correctionsView').classList.contains('active')) {
-          renderCorrections();
-        }
-        alert('學生名單已成功同步至 Firebase 雲端！');
+        renderGrid(); saveTodayToHistory(false); triggerCloudPush();
+        alert('學生名單已成功同步！');
       }
     }
 
-    // ================= 歷史紀錄與自動備份 =================
+    // ================= 歷史紀錄與每週區間統計功能 =================
     function saveTodayToHistory(showAlert = false) {
       const todayStr = getTodayDateStr();
       const boardData = JSON.parse(localStorage.getItem('cm_board_data') || '{}');
-
       historyLogs[todayStr] = {
         date: todayStr,
         students: JSON.parse(JSON.stringify(students)),
-        board: {
-          homeworkItems: boardData.homeworkItems || [],
-          examItems: boardData.examItems || [],
-          notice: boardData.notice || '',
-          subjects: boardData.subjects || []
-        },
+        board: { homeworkItems: boardData.homeworkItems || [], examItems: boardData.examItems || [], notice: boardData.notice || '', subjects: boardData.subjects || [] },
         savedAt: new Date().toLocaleTimeString('zh-TW', { hour12: false })
       };
-
       localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
-      if (showAlert) {
-        alert(`已成功儲存【${todayStr}】的班級出勤與黑板紀錄至歷史庫！`);
-      }
     }
 
     function initHistoryView() {
       const todayStr = getTodayDateStr();
       const dateInput = document.getElementById('historyDateSelect');
-      if (!dateInput.value) {
-        dateInput.value = todayStr;
-      }
+      if (!dateInput.value) dateInput.value = todayStr;
 
-      const select = document.getElementById('historyStudentSelect');
-      select.innerHTML = '<option value="">-- 請選擇學生 --</option>';
+      // 填入個人履歷學生選單
+      const select1 = document.getElementById('historyStudentSelect');
+      select1.innerHTML = '<option value="">-- 請選擇學生 --</option>';
       students.forEach(s => {
         const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = `${s.seat} 號 ${s.name}`;
-        select.appendChild(opt);
+        opt.value = s.id; opt.textContent = `${s.seat} 號 ${s.name}`;
+        select1.appendChild(opt);
       });
 
+      // 填入每週統計學生選單
+      const select2 = document.getElementById('weeklyStudentSelect');
+      select2.innerHTML = '<option value="">-- 請選擇學生 --</option>';
+      students.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.seat; opt.textContent = `${s.seat} 號 ${s.name}`;
+        select2.appendChild(opt);
+      });
+
+      // 初始化產生週次清單
+      initWeeklyRangeOptions();
       queryHistoryByDate();
     }
 
-    function queryHistoryByDate() {
-      const dateStr = document.getElementById('historyDateSelect').value;
-      const display = document.getElementById('historyResultDisplay');
+    // 自動把歷史紀錄中的日期分組成「星期一至星期五」的週次選單
+    function initWeeklyRangeOptions() {
+      const weekSelect = document.getElementById('weeklyRangeSelect');
+      weekSelect.innerHTML = '<option value="">-- 請選擇週次區間 --</option>';
 
-      if (!dateStr) {
-        display.innerHTML = `<div style="text-align:center; color:#94a3b8; padding:40px;">請選擇有效日期</div>`;
-        return;
-      }
+      const dates = Object.keys(historyLogs).sort();
+      if (dates.length === 0) return;
 
-      const log = historyLogs[dateStr];
-      if (!log) {
-        display.innerHTML = `
-          <div style="text-align:center; padding: 50px 20px; color:#64748b;">
-            <h3 style="font-size:1.3rem; margin-bottom:8px;">無【${dateStr}】的歷史紀錄</h3>
-            <p>系統目前尚未記錄該日的出勤或黑板存檔。</p>
-          </div>
-        `;
-        return;
-      }
+      let weeksMap = {};
+      dates.forEach(dateStr => {
+        const d = new Date(dateStr);
+        // 計算該日期所屬週的週一日期
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d.setDate(diff));
+        const mondayStr = monday.toISOString().split('T')[0];
+        
+        if (!weeksMap[mondayStr]) {
+          const friday = new Date(monday);
+          friday.setDate(monday.getDate() + 4);
+          weeksMap[mondayStr] = { start: mondayStr, end: friday.toISOString().split('T')[0] };
+        }
+      });
 
-      const logStudents = log.students || [];
-      const presentList = logStudents.filter(s => s.status === 'present');
-      const lateList = logStudents.filter(s => s.status === 'late');
-      const sickList = logStudents.filter(s => s.status === 'sick');
-      const personalList = logStudents.filter(s => s.status === 'personal');
-      const unknownList = logStudents.filter(s => !s.status || s.status === 'unknown');
-      const otherList = logStudents.filter(s => s.status === 'other');
-
-      const formatSeatsOnly = list => list.length > 0 
-        ? list.map(s => `${s.seat}號${s.checkInTime ? ` (${s.checkInTime})` : ''}`).join('、 ') 
-        : '<span style="color:#94a3b8;">無</span>';
-
-      const formatItemList = items => {
-        if (!items || items.length === 0) return '無紀錄';
-        const valid = items.map((t, idx) => t ? `${idx + 1}. ${t}` : null).filter(Boolean);
-        return valid.length > 0 ? valid.join('\n') : '無紀錄';
-      };
-
-      const formatSubjectScores = subjects => {
-        if (!subjects || !Array.isArray(subjects) || subjects.length === 0) return '無紀錄';
-        const valid = subjects.map(s => {
-          const scoreNum = parseInt(s.score, 10) || 0;
-          const name = (s.name || '').trim();
-          if (scoreNum > 0 && name && name !== '輸入') {
-            return `${name} ${scoreNum}`;
-          }
-          return null;
-        }).filter(Boolean);
-
-        return valid.length > 0 ? valid.join('\n') : '無紀錄';
-      };
-
-      display.innerHTML = `
-        <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:baseline;">
-          <h2 style="font-size:1.4rem; color:#1e293b;">📅 ${dateStr} 班級歷史日誌</h2>
-          <span style="font-size:0.85rem; color:#64748b;">封存時間：${log.savedAt || '當日'}</span>
-        </div>
-
-        <h3 style="font-size:1.1rem; margin-bottom:10px; color:#334155;">1. 出缺席號碼列表 (全班 ${logStudents.length} 人)</h3>
-        <table class="history-tag-table">
-          <tr>
-            <th style="width: 140px;">準時出席 (${presentList.length} 人)</th>
-            <td style="color:#0369a1;">${formatSeatsOnly(presentList)}</td>
-          </tr>
-          <tr>
-            <th style="color:#991b1b;">遲到 (${lateList.length} 人)</th>
-            <td style="color:#991b1b; font-weight:700;">${formatSeatsOnly(lateList)}</td>
-          </tr>
-          <tr>
-            <th style="color:#be123c;">病假 (${sickList.length} 人)</th>
-            <td style="color:#be123c;">${formatSeatsOnly(sickList)}</td>
-          </tr>
-          <tr>
-            <th style="color:#15803d;">事假 (${personalList.length} 人)</th>
-            <td style="color:#15803d;">${formatSeatsOnly(personalList)}</td>
-          </tr>
-          <tr>
-            <th style="color:#334155;">未到 / 不明 (${unknownList.length} 人)</th>
-            <td style="color:#334155; font-weight:bold;">${formatSeatsOnly(unknownList)}</td>
-          </tr>
-          <tr>
-            <th style="color:#6d28d9;">其他假別 (${otherList.length} 人)</th>
-            <td style="color:#6d28d9;">${formatSeatsOnly(otherList)}</td>
-          </tr>
-        </table>
-
-        <h3 style="font-size:1.1rem; margin-top:24px; margin-bottom:10px; color:#334155;">2. 當日聯絡簿備份</h3>
-        <div class="history-board-preview">
-          <div class="history-board-col">
-            <h4 style="color:#0284c7;">作業 / 繳交</h4>
-            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${formatItemList(log.board.homeworkItems)}</div>
-          </div>
-          <div class="history-board-col">
-            <h4 style="color:#dc2626;">測驗 / 考程</h4>
-            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${formatItemList(log.board.examItems)}</div>
-          </div>
-          <div class="history-board-col">
-            <h4 style="color:#16a34a;">提醒 / 叮嚀</h4>
-            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${log.board.notice || '無紀錄'}</div>
-          </div>
-          <div class="history-board-col">
-            <h4 style="color:#b45309;">科目次數</h4>
-            <div style="font-size:0.95rem; white-space:pre-wrap; line-height:1.6; color:#334155;">${formatSubjectScores(log.board.subjects)}</div>
-          </div>
-        </div>
-      `;
+      Object.values(weeksMap).sort().reverse().forEach((w, idx) => {
+        const opt = document.createElement('option');
+        opt.value = `${w.start}_${w.end}`;
+        opt.textContent = `📅 ${w.start} ~ ${w.end} (第 ${idx + 1} 週)`;
+        weekSelect.appendChild(opt);
+      });
     }
 
-    function queryHistoryByStudent() {
-      const studentId = parseInt(document.getElementById('historyStudentSelect').value);
+    // 執行每週區間統計與欠交作業查詢
+    function queryWeeklyStudentReport() {
+      const seatNum = parseInt(document.getElementById('weeklyStudentSelect').value, 10);
+      const rangeVal = document.getElementById('weeklyRangeSelect').value;
       const display = document.getElementById('historyResultDisplay');
 
-      if (!studentId) {
-        queryHistoryByDate();
-        return;
-      }
+      if (!seatNum) { alert('請先選擇學生！'); return; }
+      if (!rangeVal) { alert('請選擇週次區間！'); return; }
 
-      const studentObj = students.find(s => s.id === studentId);
-      const studentName = studentObj ? `${studentObj.seat} 號 ${studentObj.name}` : '該學生';
+      const [startDateStr, endDateStr] = rangeVal.split('_');
+      const studentObj = students.find(s => s.seat === seatNum);
+      const studentName = studentObj ? `${studentObj.seat} 號 ${studentObj.name}` : `座號 ${seatNum}`;
 
-      const dateKeys = Object.keys(historyLogs).sort().reverse();
-      let totalDays = 0;
-      let lateCount = 0;
-      let sickCount = 0;
-      let personalCount = 0;
-      let unknownCount = 0;
-      let logRows = [];
+      // 篩選出該週的日期
+      const allDates = Object.keys(historyLogs).sort();
+      const weekDates = allDates.filter(d => d >= startDateStr && d <= endDateStr);
 
-      dateKeys.forEach(d => {
-        const dayRecord = historyLogs[d];
-        if (dayRecord && dayRecord.students) {
-          const sRecord = dayRecord.students.find(s => s.id === studentId || s.seat === (studentObj && studentObj.seat));
-          if (sRecord) {
-            totalDays++;
-            const st = sRecord.status || 'unknown';
-            if (st === 'late') lateCount++;
-            if (st === 'sick') sickCount++;
-            if (st === 'personal') personalCount++;
-            if (st === 'unknown') unknownCount++;
+      let attendanceRows = [];
+      let totalLate = 0, totalSick = 0, totalPersonal = 0, totalUnk = 0;
 
-            const statusLabelMap = {
-              present: '<span style="color:#0369a1; font-weight:600;">出席</span>',
-              late: `<span style="color:#991b1b; font-weight:bold;">遲到 (${sRecord.checkInTime || '紀錄'})</span>`,
-              sick: '<span style="color:#be123c; font-weight:bold;">病假</span>',
-              personal: '<span style="color:#15803d; font-weight:bold;">事假</span>',
-              other: '<span style="color:#6d28d9;">其他</span>',
-              unknown: '<span style="color:#334155; font-weight:bold;">未到</span>'
-            };
+      weekDates.forEach(d => {
+        const log = historyLogs[d];
+        const sRecord = log.students.find(s => s.seat === seatNum);
+        if (sRecord) {
+          const st = sRecord.status || 'unknown';
+          if (st === 'late') totalLate++;
+          if (st === 'sick') totalSick++;
+          if (st === 'personal') totalPersonal++;
+          if (st === 'unknown') totalUnk++;
 
-            logRows.push(`
-              <tr>
-                <td>${d}</td>
-                <td>${statusLabelMap[st] || '未到'}</td>
-              </tr>
-            `);
+          const statusMap = {
+            present: '<span style="color:#0369a1; font-weight:600;">出席</span>',
+            late: `<span style="color:#991b1b; font-weight:bold;">遲到 (${sRecord.checkInTime || ''})</span>`,
+            sick: '<span style="color:#be123c; font-weight:bold;">病假</span>',
+            personal: '<span style="color:#15803d; font-weight:bold;">事假</span>',
+            other: '<span style="color:#6d28d9;">其他</span>',
+            unknown: '<span style="color:#334155;">未到</span>'
+          };
+          attendanceRows.push(`<tr><td>${d}</td><td>${statusMap[st] || '未到'}</td></tr>`);
+        }
+      });
+
+      // 檢查該週內「作業訂正追蹤」中該學生的欠交情況
+      let pendingTasks = [];
+      correctionTasks.forEach(task => {
+        // 如果作業日期落在該週範圍內，且該生在需訂正名單中
+        if (task.date >= startDateStr && task.date <= endDateStr) {
+          if (task.needFixSeats && task.needFixSeats.includes(seatNum)) {
+            pendingTasks.push(`<li>📅 <strong>${task.date}</strong> - ${task.title}</li>`);
           }
         }
       });
 
       display.innerHTML = `
         <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 20px;">
-          <h2 style="font-size:1.4rem; color:#1e293b;">👤 ${studentName} - 個人出勤履歷</h2>
-          <p style="font-size:0.9rem; color:#64748b; margin-top:4px;">統計歷史中已存檔的 ${totalDays} 個上課日</p>
+          <h2 style="font-size:1.4rem; color:#1e293b;">📊 ${studentName} - 每週區間統計報告</h2>
+          <p style="font-size:0.9rem; color:#64748b; margin-top:4px;">統計區間：${startDateStr} ～ ${endDateStr}</p>
         </div>
 
         <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:20px;">
           <div class="stat-tile">
-            <div class="stat-tile-label">累計遲到</div>
-            <div class="stat-tile-num" style="color:#991b1b;">${lateCount} 次</div>
+            <div class="stat-tile-label">本週遲到</div>
+            <div class="stat-tile-num" style="color:#991b1b;">${totalLate} 次</div>
           </div>
           <div class="stat-tile">
-            <div class="stat-tile-label">病假</div>
-            <div class="stat-tile-num" style="color:#be123c;">${sickCount} 天</div>
+            <div class="stat-tile-label">本週病假</div>
+            <div class="stat-tile-num" style="color:#be123c;">${totalSick} 天</div>
           </div>
           <div class="stat-tile">
-            <div class="stat-tile-label">事假</div>
-            <div class="stat-tile-num" style="color:#15803d;">${personalCount} 天</div>
+            <div class="stat-tile-label">本週事假</div>
+            <div class="stat-tile-num" style="color:#15803d;">${totalPersonal} 天</div>
           </div>
           <div class="stat-tile">
-            <div class="stat-tile-label">未到/缺席</div>
-            <div class="stat-tile-num" style="color:#334155;">${unknownCount} 天</div>
+            <div class="stat-tile-label">本週未到</div>
+            <div class="stat-tile-num" style="color:#334155;">${totalUnk} 天</div>
           </div>
         </div>
 
-        <h3 style="font-size:1.1rem; margin-bottom:10px; color:#334155;">每日詳細出勤紀錄明細</h3>
-        <table class="history-tag-table">
-          <thead>
-            <tr>
-              <th style="width: 160px;">日期</th>
-              <th>當日出勤狀態</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${logRows.length > 0 ? logRows.join('') : '<tr><td colspan="2" style="text-align:center; color:#94a3b8;">暫無紀錄</td></tr>'}
-          </tbody>
+        <h3 style="font-size:1.1rem; margin-bottom:10px; color:#334155;">1. 每日出勤明細</h3>
+        <table class="history-tag-table" style="margin-bottom: 24px;">
+          <thead><tr><th style="width: 160px;">日期</th><th>當日出勤狀態</th></tr></thead>
+          <tbody>${attendanceRows.length > 0 ? attendanceRows.join('') : '<tr><td colspan="2" style="text-align:center; color:#94a3b8;">此區間無出勤紀錄</td></tr>'}</tbody>
         </table>
+
+        <h3 style="font-size:1.1rem; margin-bottom:10px; color:#dc2626;">2. 本週尚未完成的作業訂正追蹤</h3>
+        <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:16px; color:#991b1b; font-size:0.95rem; line-height:1.6;">
+          ${pendingTasks.length > 0 ? `<ul style="padding-left: 20px;">${pendingTasks.join('')}</ul>` : '🎉 太棒了！該學生本週沒有未完成的作業訂正！'}
+        </div>
       `;
+    }
+
+    function queryHistoryByDate() {
+      const dateStr = document.getElementById('historyDateSelect').value;
+      const display = document.getElementById('historyResultDisplay');
+      if (!dateStr) return;
+      const log = historyLogs[dateStr];
+      if (!log) { display.innerHTML = `<div style="text-align:center; padding:40px; color:#64748b;">無【${dateStr}】的歷史紀錄</div>`; return; }
+      
+      const pList = log.students.filter(s => s.status === 'present');
+      const lList = log.students.filter(s => s.status === 'late');
+      const sList = log.students.filter(s => s.status === 'sick');
+      const uList = log.students.filter(s => !s.status || s.status === 'unknown');
+      
+      display.innerHTML = `
+        <h2 style="font-size:1.4rem; margin-bottom:14px;">📅 ${dateStr} 日誌摘要</h2>
+        <p>出席：${pList.length} 人 | 遲到：${lList.length} 人 | 病假：${sList.length} 人 | 未到：${uList.length} 人</p>
+      `;
+    }
+
+    function queryHistoryByStudent() {
+      const studentId = parseInt(document.getElementById('historyStudentSelect').value, 10);
+      const display = document.getElementById('historyResultDisplay');
+      if (!studentId) return;
+      const studentObj = students.find(s => s.id === studentId);
+      display.innerHTML = `<h2 style="font-size:1.4rem;">👤 ${studentObj ? studentObj.name : ''} 個人履歷總覽</h2><p>可點選左側「每週區間統計」查看更詳細的週報與訂正追蹤！</p>`;
     }
 
     function exportHistoryData() {
@@ -2669,74 +2394,36 @@
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", `班級歷史紀錄備份_${getTodayDateStr()}.json`);
       document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      downloadAnchor.click(); downloadAnchor.remove();
     }
 
-    function triggerImportFileInput() {
-      document.getElementById('historyFileInput').click();
-    }
+    function triggerImportFileInput() { document.getElementById('historyFileInput').click(); }
 
     function handleImportFile(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const importedData = JSON.parse(e.target.result);
-          if (typeof importedData === 'object' && importedData !== null) {
-            historyLogs = Object.assign({}, historyLogs, importedData);
-            localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
-
-            const dates = Object.keys(importedData).sort().reverse();
-            if (dates.length > 0 && importedData[dates[0]].students) {
-              const sampleName = students[0] ? students[0].name : '';
-              if (sampleName.startsWith('學生') || confirm('是否要同時將備份檔中的最新學生名單套用至當前班級？')) {
-                students = importedData[dates[0]].students.map(s => ({
-                  id: s.id,
-                  seat: s.seat,
-                  name: s.name,
-                  status: s.status || 'unknown',
-                  checkInTime: s.checkInTime || '',
-                  periods: s.periods || createDefaultPeriods(s.status || 'unknown')
-                }));
-                localStorage.setItem('cm_students', JSON.stringify(students));
-                renderGrid();
-              }
-            }
-
-            triggerCloudPush();
-            initHistoryView();
-
-            alert(`✅ 成功匯入 ${Object.keys(importedData).length} 天的歷史備份紀錄！已同步至 Firebase。`);
-          } else {
-            alert('檔案格式錯誤，請選取有效的 JSON 歷史備份檔！');
-          }
-        } catch (err) {
-          alert('解析備份檔案失敗，請確認檔案是否完整！');
-          console.error(err);
-        }
+          historyLogs = Object.assign({}, historyLogs, importedData);
+          localStorage.setItem('cm_history_logs', JSON.stringify(historyLogs));
+          triggerCloudPush();
+          initHistoryView();
+          alert(`✅ 成功匯入歷史備份！`);
+        } catch (err) { alert('解析備份檔案失敗！'); }
         event.target.value = '';
       };
       reader.readAsText(file, 'UTF-8');
     }
 
-    // 初始化載入
     window.addEventListener('DOMContentLoaded', () => {
       timeBasedChecks();
       loadBoardData();
-
       const savedThreshold = localStorage.getItem('cm_late_threshold');
-      if (savedThreshold) {
-        document.getElementById('lateThresholdInput').value = savedThreshold;
-      }
-
+      if (savedThreshold) document.getElementById('lateThresholdInput').value = savedThreshold;
       renderGrid();
-      
-      // 啟動 Firebase 即時監聽
       initFirebaseListener();
-
       setInterval(timeBasedChecks, 60 * 1000);
     });
   </script>
